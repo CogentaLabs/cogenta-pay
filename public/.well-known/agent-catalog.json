@@ -4,11 +4,15 @@
   "store": {
     "name": "Cogenta Machine Storefront",
     "domain": "pay.cogentalabs.com",
-    "moove_handle": "@cogentalabs",
+    "moove_handle": "@cogentapay",
     "settlement_asset": "USDC",
     "settlement_rails": "moove_cross_chain"
   },
-  "protocols_supported": ["coinbase-x402", "google-ap2", "openai-acp"],
+  "protocols_supported": [
+    "coinbase-x402",
+    "google-ap2",
+    "openai-acp"
+  ],
   "endpoints": {
     "catalog": "https://pay.cogentalabs.com/.well-known/agent-catalog.json",
     "quote": "https://pay.cogentalabs.com/api/checkout",
@@ -25,7 +29,13 @@
       "inventory_status": "in_stock",
       "stock_quantity": 128,
       "requires_shipping": false,
-      "supported_source_chains": ["base", "solana", "ethereum", "polygon", "arbitrum"]
+      "supported_source_chains": [
+        "base",
+        "solana",
+        "ethereum",
+        "polygon",
+        "arbitrum"
+      ]
     },
     {
       "id": "prod_agent_key",
@@ -37,7 +47,13 @@
       "stock_quantity": 42,
       "requires_shipping": true,
       "shipping_weight_kg": 0.15,
-      "supported_source_chains": ["base", "solana", "ethereum", "polygon", "arbitrum"]
+      "supported_source_chains": [
+        "base",
+        "solana",
+        "ethereum",
+        "polygon",
+        "arbitrum"
+      ]
     },
     {
       "id": "prod_data_oracle",
@@ -48,7 +64,13 @@
       "inventory_status": "in_stock",
       "stock_quantity": 999,
       "requires_shipping": false,
-      "supported_source_chains": ["base", "solana", "ethereum", "polygon", "arbitrum"]
+      "supported_source_chains": [
+        "base",
+        "solana",
+        "ethereum",
+        "polygon",
+        "arbitrum"
+      ]
     }
   ]
 }
