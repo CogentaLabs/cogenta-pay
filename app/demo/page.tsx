@@ -169,7 +169,7 @@ export default function DemoPage() {
       setStepState(5)
       addLog("success", `< HTTP/1.1 200 OK | Settlement Confirmed on Moove! Latency: ${verifyData.settlement.latency_ms}ms`)
       addLog("code", `[Receipt Hash] ${verifyData.settlement.tx_hash}`)
-      addLog("success", `[Fulfillment] Order finalized for @cogentalabs. Token: ${verifyData.fulfillment.release_token}`)
+      addLog("success", `[Fulfillment] Order finalized for @cogentapay. Token: ${verifyData.fulfillment.release_token}`)
     } catch (err: any) {
       addLog("error", `Simulation Error: ${err.message}`)
     } finally {
@@ -230,7 +230,7 @@ export default function DemoPage() {
 
           <div className="flex items-center gap-2 bg-[#FBF9F8] border border-[#E0DEDB] px-3.5 py-2 rounded-xl text-xs font-sans">
             <span className="text-[#847E79]">Merchant Settlement:</span>
-            <span className="font-semibold text-[#37322F] font-mono">@cogentalabs</span>
+            <span className="font-semibold text-[#37322F] font-mono">@cogentapay</span>
             <span className="px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[10px] font-bold">100% USDC</span>
           </div>
         </div>
@@ -255,11 +255,10 @@ export default function DemoPage() {
                     <div
                       key={prod.id}
                       onClick={() => !isRunning && setSelectedProduct(prod)}
-                      className={`p-4 rounded-xl border transition-all cursor-pointer flex flex-col gap-1.5 ${
-                        isSelected
-                          ? "bg-[#FAF8F5] border-[#37322F] shadow-sm ring-1 ring-[#37322F]"
-                          : "border-[#E0DEDB] hover:bg-[#FAF9F7]"
-                      }`}
+                      className={`p-4 rounded-xl border transition-all cursor-pointer flex flex-col gap-1.5 ${isSelected
+                        ? "bg-[#FAF8F5] border-[#37322F] shadow-sm ring-1 ring-[#37322F]"
+                        : "border-[#E0DEDB] hover:bg-[#FAF9F7]"
+                        }`}
                     >
                       <div className="flex justify-between items-start gap-2">
                         <span className="text-sm font-bold font-sans text-[#37322F] leading-tight">
@@ -319,11 +318,10 @@ export default function DemoPage() {
                         type="button"
                         disabled={isRunning}
                         onClick={() => setSelectedChain(chain.id)}
-                        className={`px-2 py-2 rounded-lg border text-xs font-medium flex flex-col items-center gap-1 transition-all ${
-                          selectedChain === chain.id
-                            ? "bg-[#37322F] text-white border-[#37322F] shadow-xs"
-                            : "bg-white text-[#605A57] border-[#E0DEDB] hover:bg-[#F8F6F4]"
-                        }`}
+                        className={`px-2 py-2 rounded-lg border text-xs font-medium flex flex-col items-center gap-1 transition-all ${selectedChain === chain.id
+                          ? "bg-[#37322F] text-white border-[#37322F] shadow-xs"
+                          : "bg-white text-[#605A57] border-[#E0DEDB] hover:bg-[#F8F6F4]"
+                          }`}
                       >
                         <img
                           src={chain.icon}
@@ -413,11 +411,10 @@ export default function DemoPage() {
                 ].map((st, i) => (
                   <div
                     key={i}
-                    className={`text-[11px] font-mono py-1 px-2 rounded text-center border transition-all ${
-                      st.active
-                        ? "bg-emerald-950/60 border-emerald-500/60 text-emerald-400 font-semibold"
-                        : "bg-zinc-900 border-zinc-800 text-zinc-600"
-                    }`}
+                    className={`text-[11px] font-mono py-1 px-2 rounded text-center border transition-all ${st.active
+                      ? "bg-emerald-950/60 border-emerald-500/60 text-emerald-400 font-semibold"
+                      : "bg-zinc-900 border-zinc-800 text-zinc-600"
+                      }`}
                   >
                     {st.label}
                   </div>
@@ -428,31 +425,28 @@ export default function DemoPage() {
               <div className="flex items-center gap-4 text-xs font-mono border-b border-zinc-800">
                 <button
                   onClick={() => setActiveTab("logs")}
-                  className={`pb-2 border-b-2 transition-all ${
-                    activeTab === "logs"
-                      ? "border-emerald-400 text-emerald-400 font-semibold"
-                      : "border-transparent text-zinc-500 hover:text-zinc-300"
-                  }`}
+                  className={`pb-2 border-b-2 transition-all ${activeTab === "logs"
+                    ? "border-emerald-400 text-emerald-400 font-semibold"
+                    : "border-transparent text-zinc-500 hover:text-zinc-300"
+                    }`}
                 >
                   Live Logs ({logs.length})
                 </button>
                 <button
                   onClick={() => setActiveTab("payload402")}
-                  className={`pb-2 border-b-2 transition-all ${
-                    activeTab === "payload402"
-                      ? "border-emerald-400 text-emerald-400 font-semibold"
-                      : "border-transparent text-zinc-500 hover:text-zinc-300"
-                  }`}
+                  className={`pb-2 border-b-2 transition-all ${activeTab === "payload402"
+                    ? "border-emerald-400 text-emerald-400 font-semibold"
+                    : "border-transparent text-zinc-500 hover:text-zinc-300"
+                    }`}
                 >
                   HTTP 402 Payload {latest402 ? "✓" : ""}
                 </button>
                 <button
                   onClick={() => setActiveTab("receipt")}
-                  className={`pb-2 border-b-2 transition-all ${
-                    activeTab === "receipt"
-                      ? "border-emerald-400 text-emerald-400 font-semibold"
-                      : "border-transparent text-zinc-500 hover:text-zinc-300"
-                  }`}
+                  className={`pb-2 border-b-2 transition-all ${activeTab === "receipt"
+                    ? "border-emerald-400 text-emerald-400 font-semibold"
+                    : "border-transparent text-zinc-500 hover:text-zinc-300"
+                    }`}
                 >
                   Settlement Receipt {latestReceipt ? "✓" : ""}
                 </button>
@@ -478,12 +472,12 @@ export default function DemoPage() {
                               log.type === "success"
                                 ? "text-emerald-400"
                                 : log.type === "warn"
-                                ? "text-amber-400"
-                                : log.type === "error"
-                                ? "text-red-400 font-bold"
-                                : log.type === "code"
-                                ? "text-cyan-300 pl-2 border-l border-zinc-800"
-                                : "text-zinc-300"
+                                  ? "text-amber-400"
+                                  : log.type === "error"
+                                    ? "text-red-400 font-bold"
+                                    : log.type === "code"
+                                      ? "text-cyan-300 pl-2 border-l border-zinc-800"
+                                      : "text-zinc-300"
                             }
                           >
                             {log.message}
@@ -523,9 +517,8 @@ export default function DemoPage() {
               <div className="flex flex-col sm:flex-row justify-between items-center text-[11px] text-zinc-500 font-mono pt-1 gap-2">
                 <span className="flex items-center gap-1.5">
                   <span
-                    className={`w-2 h-2 rounded-full ${
-                      stepState === 5 ? "bg-emerald-400" : isRunning ? "bg-amber-400 animate-ping" : "bg-zinc-600"
-                    }`}
+                    className={`w-2 h-2 rounded-full ${stepState === 5 ? "bg-emerald-400" : isRunning ? "bg-amber-400 animate-ping" : "bg-zinc-600"
+                      }`}
                   ></span>
                   Status: {stepState === 5 ? "Completed" : isRunning ? "Processing Agent Negotiation..." : "Idle"}
                 </span>
