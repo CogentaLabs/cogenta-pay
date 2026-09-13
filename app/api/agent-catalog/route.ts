@@ -9,7 +9,7 @@ export async function GET() {
     store: {
       name: "Cogenta Machine Storefront",
       domain: "pay.cogentalabs.com",
-      moove_handle: "@cogentalabs",
+      moove_handle: "@cogentapay",
       settlement_asset: "USDC",
       settlement_rails: "moove_cross_chain",
     },

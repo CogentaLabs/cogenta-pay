@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
       order_id,
       merchant: {
         name: "Cogenta Machine Storefront",
-        handle: "@cogentalabs",
+        handle: "@cogentapay",
         settled_vault: "moove://vault/cogentalabs/usdc",
       },
       settlement: {

@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
     // Generate unique machine order identifier and dynamic Moove link token
     const orderId = `ord_${Math.random().toString(36).substring(2, 9)}_${Date.now().toString(36)}`
     const mooveDynamicToken = `dyn_cgt_${Math.random().toString(36).substring(2, 10)}`
-    const moovePaymentLink = `https://pay.moove.xyz/pay/${mooveDynamicToken}?to=@cogentalabs&amount=${totalUsdc}&asset=USDC`
+    const moovePaymentLink = `https://pay.moove.xyz/pay/${mooveDynamicToken}?to=@cogentapay&amount=${totalUsdc}&asset=USDC`
 
     const expiryTimestamp = Math.floor(Date.now() / 1000) + 15 * 60 // 15-minute lock
 
@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
       },
       amount_due_usdc: totalUsdc,
       settlement_asset: "USDC",
-      settlement_recipient: "@cogentalabs",
+      settlement_recipient: "@cogentapay",
       moove_rail: {
         provider: "moove.xyz",
         payment_link: moovePaymentLink,
@@ -61,7 +61,7 @@ export async function POST(req: NextRequest) {
       status: 402, // HTTP 402 Payment Required
       headers: {
         "X-Payment-Protocol": 'x402; version="1.0"',
-        "X-Moove-Recipient": "@cogentalabs",
+        "X-Moove-Recipient": "@cogentapay",
         "X-402-Amount": totalUsdc,
         "X-402-Currency": "USDC",
         "Access-Control-Allow-Origin": "*",
