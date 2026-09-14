@@ -3,28 +3,25 @@
 import { useState } from "react"
 
 export default function PricingSection() {
-  const [billingPeriod, setBillingPeriod] = useState<"monthly" | "annually">("annually")
+  const [email, setEmail] = useState("")
+  const [submitted, setSubmitted] = useState(false)
+  const [error, setError] = useState("")
 
-  const pricing = {
-    starter: {
-      monthly: 0,
-      annually: 0,
-    },
-    professional: {
-      monthly: 99,
-      annually: 79, // 20% discount for annual
-    },
-    enterprise: {
-      monthly: 499,
-      annually: 399, // 20% discount for annual
-    },
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!email || !email.includes("@")) {
+      setError("Please enter a valid email address.")
+      return
+    }
+    setError("")
+    setSubmitted(true)
   }
 
   return (
-    <div className="w-full flex flex-col justify-center items-center gap-2">
+    <div id="pricing" className="w-full flex flex-col justify-center items-center gap-2">
       {/* Header Section */}
       <div className="self-stretch px-6 md:px-24 py-12 md:py-16 border-b border-[rgba(55,50,47,0.12)] flex justify-center items-center gap-6">
-        <div className="w-full max-w-[586px] px-6 py-5 shadow-[0px_2px_4px_rgba(50,45,43,0.06)] overflow-hidden rounded-lg flex flex-col justify-start items-center gap-4 shadow-none">
+        <div className="w-full max-w-[620px] px-6 py-5 shadow-[0px_2px_4px_rgba(50,45,43,0.06)] overflow-hidden rounded-lg flex flex-col justify-start items-center gap-4 shadow-none">
           {/* Pricing Badge */}
           <div className="px-[14px] py-[6px] bg-white shadow-[0px_0px_0px_4px_rgba(55,50,47,0.05)] overflow-hidden rounded-[90px] flex justify-start items-center gap-[8px] border border-[rgba(2,6,23,0.08)] shadow-xs">
             <div className="w-[14px] h-[14px] relative overflow-hidden flex items-center justify-center">
@@ -39,33 +36,31 @@ export default function PricingSection() {
               </svg>
             </div>
             <div className="text-center flex justify-center flex-col text-[#37322F] text-xs font-medium leading-3 font-sans">
-              Plans & Pricing
+              Beta Access
             </div>
           </div>
 
           {/* Title */}
           <div className="self-stretch text-center flex justify-center flex-col text-[#49423D] text-3xl md:text-5xl font-semibold leading-tight md:leading-[60px] font-sans tracking-tight">
-            Priced for the machine economy
+            Price for the machine economy
           </div>
 
           {/* Description */}
           <div className="self-stretch text-center text-[#605A57] text-base font-normal leading-7 font-sans">
-            Start free with the self-serve plugin. Pay only as agent volume scales.
-            <br />
-            A flat 0.5% settlement fee applies on top of every plan.
+            Machine commerce shouldn&apos;t carry expensive SaaS subscriptions or upfront software licenses.
+            <br className="hidden sm:block" />
+            CogentaPay operates on a transparent, per-transaction settlement model powered by Moove.
           </div>
         </div>
       </div>
 
-
-
-      {/* Pricing Cards Section */}
+      {/* Beta Access & Email Box Section */}
       <div className="self-stretch border-b border-t border-[rgba(55,50,47,0.12)] flex justify-center items-center">
         <div className="flex justify-center items-start w-full">
           {/* Left Decorative Pattern */}
           <div className="w-12 self-stretch relative overflow-hidden hidden md:block">
             <div className="w-[162px] left-[-58px] top-[-120px] absolute flex flex-col justify-start items-start">
-              {Array.from({ length: 200 }).map((_, i) => (
+              {Array.from({ length: 120 }).map((_, i) => (
                 <div
                   key={i}
                   className="self-stretch h-4 rotate-[-45deg] origin-top-left outline outline-[0.5px] outline-[rgba(3,7,18,0.08)] outline-offset-[-0.25px]"
@@ -74,184 +69,82 @@ export default function PricingSection() {
             </div>
           </div>
 
-          {/* Pricing Cards Container */}
-          <div className="flex-1 flex flex-col md:flex-row justify-center items-center gap-6 py-12 md:py-0">
-            {/* Starter Plan */}
-            <div className="flex-1 max-w-full md:max-w-none self-stretch px-6 py-5 border border-[rgba(50,45,43,0.12)] border-[#E0DEDB] overflow-hidden flex flex-col justify-start items-start gap-12 bg-[rgba(255,255,255,0)]">
-              {/* Plan Header */}
-              <div className="self-stretch flex flex-col justify-start items-center gap-9">
-                <div className="self-stretch flex flex-col justify-start items-start gap-2">
-                  <div className="text-[rgba(55,50,47,0.90)] text-lg font-medium leading-7 font-sans">Developer</div>
-                  <div className="w-full max-w-[242px] text-[rgba(41,37,35,0.70)] text-sm font-normal leading-5 font-sans">
-                    For indie builders testing agentic checkout in a sandbox.
-                  </div>
-                </div>
-
-                <div className="self-stretch flex flex-col justify-start items-start gap-2">
-                  <div className="flex flex-col justify-start items-start gap-1">
-                    <div className="relative h-[60px] flex items-center text-[#37322F] text-5xl font-medium leading-[60px] font-serif">
-                      <span>Free</span>
-                    </div>
-                    <div className="text-[#847971] text-sm font-medium font-sans">
-                      forever.
-                    </div>
-                  </div>
-                </div>
-
-                <div className="self-stretch px-4 py-[10px] relative bg-[#37322F] shadow-[0px_2px_4px_rgba(55,50,47,0.12)] overflow-hidden rounded-[99px] flex justify-center items-center">
-                  <div className="w-full h-[41px] absolute left-0 top-[-0.5px] bg-gradient-to-b from-[rgba(255,255,255,0.20)] to-[rgba(0,0,0,0.10)] mix-blend-multiply"></div>
-                  <div className="max-w-[108px] flex justify-center flex-col text-[#FBFAF9] text-[13px] font-medium leading-5 font-sans">
-                    Get API keys
-                  </div>
-                </div>
+          {/* Center Beta Container */}
+          <div className="flex-1 max-w-[760px] py-12 md:py-16 px-4 sm:px-6 flex flex-col justify-center items-center gap-8">
+            <div className="w-full bg-white border border-[#E0DEDB] rounded-2xl p-6 sm:p-10 shadow-sm flex flex-col justify-center items-center gap-6 text-center">
+              <div className="w-12 h-12 rounded-full bg-[#F7F5F3] border border-[rgba(55,50,47,0.08)] flex items-center justify-center text-[#37322F]">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path
+                    d="M3 8L10.89 13.26C11.56 13.71 12.44 13.71 13.11 13.26L21 8M5 19H19C20.1 19 21 18.1 21 17V7C21 5.9 20.1 5 19 5H5C3.9 5 3 5.9 3 7V17C3 18.1 3.9 19 5 19Z"
+                    stroke="#37322F"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
               </div>
 
-              <div className="self-stretch flex flex-col justify-start items-start gap-2">
-                {[
-                  "Full sandbox environment",
-                  "Card & crypto test rails",
-                  "x402 protocol endpoints",
-                  "Community support",
-                  "Up to $1k monthly volume",
-                ].map((feature, index) => (
-                  <div key={index} className="self-stretch flex justify-start items-center gap-[13px]">
-                    <div className="w-4 h-4 relative flex items-center justify-center">
-                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path
-                          d="M10 3L4.5 8.5L2 6"
-                          stroke="#9CA3AF"
-                          strokeWidth="1.5"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                    </div>
-                    <div className="flex-1 text-[rgba(55,50,47,0.80)] text-[12.5px] font-normal leading-5 font-sans">
-                      {feature}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Professional Plan (Featured) */}
-            <div className="flex-1 max-w-full md:max-w-none self-stretch px-6 py-5 bg-[#37322F] border border-[rgba(50,45,43,0.12)] border-[rgba(55,50,47,0.12)] overflow-hidden flex flex-col justify-start items-start gap-12">
-              {/* Plan Header */}
-              <div className="self-stretch flex flex-col justify-start items-center gap-9">
-                <div className="self-stretch flex flex-col justify-start items-start gap-2">
-                  <div className="text-[#FBFAF9] text-lg font-medium leading-7 font-sans">Growth</div>
-                  <div className="w-full max-w-[242px] text-[#B2AEA9] text-sm font-normal leading-5 font-sans">
-                    For live merchants accepting real agent payments at scale.
-                  </div>
-                </div>
-
-                <div className="self-stretch flex flex-col justify-start items-start gap-2">
-                  <div className="flex flex-col justify-start items-start gap-1">
-                    <div className="relative h-[60px] flex items-center text-[#F0EFEE] text-3xl font-medium leading-[60px] font-serif">
-                      <span>Coming Soon</span>
-                    </div>
-                    <div className="text-[#D2C6BF] text-sm font-medium font-sans">
-                      pricing details to be announced.
-                    </div>
-                  </div>
-                </div>
-
-                {/* CTA Button */}
-                <div className="self-stretch px-4 py-[10px] relative bg-[#FBFAF9] shadow-[0px_2px_4px_rgba(55,50,47,0.12)] overflow-hidden rounded-[99px] flex justify-center items-center">
-                  <div className="w-full h-[41px] absolute left-0 top-[-0.5px] bg-gradient-to-b from-[rgba(255,255,255,0)] to-[rgba(0,0,0,0.10)] mix-blend-multiply"></div>
-                  <div className="max-w-[108px] flex justify-center flex-col text-[#37322F] text-[13px] font-medium leading-5 font-sans">
-                    Get started
-                  </div>
-                </div>
+              <div className="flex flex-col gap-2 max-w-[500px]">
+                <h3 className="text-[#37322F] text-xl sm:text-2xl font-semibold font-sans tracking-tight">
+                  Apply for Private Beta Access
+                </h3>
+                <p className="text-[#605A57] text-sm sm:text-base font-normal leading-relaxed font-sans">
+                  We are currently onboarding an initial cohort of e-commerce storefronts, API providers, and autonomous agent builders. Enter your email to secure early access.
+                </p>
               </div>
 
-              <div className="self-stretch flex flex-col justify-start items-start gap-2">
-                {[
-                  "Unlimited transaction volume",
-                  "Card, crypto & x402 rails",
-                  "37+ chain settlement via Moove",
-                  "Cryptographic receipts",
-                  "WooCommerce & Shopify plugins",
-                  "Real-time settlement dashboard",
-                  "Priority support",
-                  "Webhooks & full REST API",
-                ].map((feature, index) => (
-                  <div key={index} className="self-stretch flex justify-start items-center gap-[13px]">
-                    <div className="w-4 h-4 relative flex items-center justify-center">
-                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path
-                          d="M10 3L4.5 8.5L2 6"
-                          stroke="#FF8000"
-                          strokeWidth="1.5"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                    </div>
-                    <div className="flex-1 text-[#F0EFEE] text-[12.5px] font-normal leading-5 font-sans">{feature}</div>
+              {submitted ? (
+                <div className="w-full max-w-[480px] p-4 bg-[#F2F8F4] border border-[#BDE0C7] rounded-xl flex items-center justify-center gap-3 text-[#1D6C3E] text-sm font-medium">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M20 6L9 17L4 12" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                  <span>Thank you! We&apos;ve added you to the priority beta access list.</span>
+                </div>
+              ) : (
+                <form onSubmit={handleSubmit} className="w-full max-w-[500px] flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
+                  <div className="flex-1 relative">
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="merchant@store.com or developer@agent.ai"
+                      className="w-full h-11 sm:h-12 px-4 bg-[#FBF9F8] border border-[#E0DEDB] rounded-full text-sm text-[#37322F] placeholder-[rgba(55,50,47,0.4)] focus:outline-none focus:ring-2 focus:ring-[#37322F]/20 focus:border-[#37322F] transition-all font-sans"
+                    />
                   </div>
-                ))}
-              </div>
-            </div>
+                  <button
+                    type="submit"
+                    className="h-11 sm:h-12 px-6 sm:px-8 bg-[#37322F] hover:bg-[#262320] text-white text-sm font-medium rounded-full shadow-sm transition-all duration-200 cursor-pointer flex justify-center items-center font-sans whitespace-nowrap"
+                  >
+                    Apply for Beta Access
+                  </button>
+                </form>
+              )}
 
-            {/* Enterprise Plan */}
-            <div className="flex-1 max-w-full md:max-w-none self-stretch px-6 py-5 bg-white border border-[#E0DEDB] overflow-hidden flex flex-col justify-start items-start gap-12">
-              {/* Plan Header */}
-              <div className="self-stretch flex flex-col justify-start items-center gap-9">
-                <div className="self-stretch flex flex-col justify-start items-start gap-2">
-                  <div className="text-[rgba(55,50,47,0.90)] text-lg font-medium leading-7 font-sans">Enterprise</div>
-                  <div className="w-full max-w-[242px] text-[rgba(41,37,35,0.70)] text-sm font-normal leading-5 font-sans">
-                    For marketplaces and platforms with custom settlement needs.
+              {error && <div className="text-xs text-red-600 font-sans">{error}</div>}
+
+              {/* Value Highlights */}
+              <div className="pt-4 border-t border-[rgba(55,50,47,0.08)] w-full grid grid-cols-1 sm:grid-cols-3 gap-4 text-left">
+                <div className="flex items-start gap-2.5">
+                  <div className="w-4 h-4 rounded-full bg-[#EFECE8] flex items-center justify-center text-[#37322F] text-[10px] font-bold mt-0.5">✓</div>
+                  <div className="flex flex-col">
+                    <span className="text-xs font-semibold text-[#37322F] font-sans">Zero Subscriptions</span>
+                    <span className="text-[11px] text-[#847E79] font-sans">No monthly platform fees during beta</span>
                   </div>
                 </div>
-
-                <div className="self-stretch flex flex-col justify-start items-start gap-2">
-                  <div className="flex flex-col justify-start items-start gap-1">
-                    <div className="relative h-[60px] flex items-center text-[#37322F] text-5xl font-medium leading-[60px] font-serif">
-                      <span>Custom</span>
-                    </div>
-                    <div className="text-[#847971] text-sm font-medium font-sans">
-                      tailored to your volume.
-                    </div>
+                <div className="flex items-start gap-2.5">
+                  <div className="w-4 h-4 rounded-full bg-[#EFECE8] flex items-center justify-center text-[#37322F] text-[10px] font-bold mt-0.5">✓</div>
+                  <div className="flex flex-col">
+                    <span className="text-xs font-semibold text-[#37322F] font-sans">Powered by Moove</span>
+                    <span className="text-[11px] text-[#847E79] font-sans">Non-custodial multi-chain settlement</span>
                   </div>
                 </div>
-
-                <div className="self-stretch px-4 py-[10px] relative bg-[#37322F] shadow-[0px_2px_4px_rgba(55,50,47,0.12)] overflow-hidden rounded-[99px] flex justify-center items-center">
-                  <div className="w-full h-[41px] absolute left-0 top-[-0.5px] bg-gradient-to-b from-[rgba(255,255,255,0.20)] to-[rgba(0,0,0,0.10)] mix-blend-multiply"></div>
-                  <div className="max-w-[108px] flex justify-center flex-col text-[#FBFAF9] text-[13px] font-medium leading-5 font-sans">
-                    Talk to sales
+                <div className="flex items-start gap-2.5">
+                  <div className="w-4 h-4 rounded-full bg-[#EFECE8] flex items-center justify-center text-[#37322F] text-[10px] font-bold mt-0.5">✓</div>
+                  <div className="flex flex-col">
+                    <span className="text-xs font-semibold text-[#37322F] font-sans">Sandbox Ready</span>
+                    <span className="text-[11px] text-[#847E79] font-sans">Testnet HTTP 402 endpoints & docs</span>
                   </div>
                 </div>
-              </div>
-
-              <div className="self-stretch flex flex-col justify-start items-start gap-2">
-                {[
-                  "Everything in Growth",
-                  "Custom settlement fees",
-                  "Dedicated liquidity routing",
-                  "SLA & 24/7 support",
-                  "SOC 2 & compliance reporting",
-                  "SSO & role-based access",
-                  "White-label checkout",
-                  "Dedicated solutions engineer",
-                ].map((feature, index) => (
-                  <div key={index} className="self-stretch flex justify-start items-center gap-[13px]">
-                    <div className="w-4 h-4 relative flex items-center justify-center">
-                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path
-                          d="M10 3L4.5 8.5L2 6"
-                          stroke="#9CA3AF"
-                          strokeWidth="1.5"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                    </div>
-                    <div className="flex-1 text-[rgba(55,50,47,0.80)] text-[12.5px] font-normal leading-5 font-sans">
-                      {feature}
-                    </div>
-                  </div>
-                ))}
               </div>
             </div>
           </div>
@@ -259,7 +152,7 @@ export default function PricingSection() {
           {/* Right Decorative Pattern */}
           <div className="w-12 self-stretch relative overflow-hidden hidden md:block">
             <div className="w-[162px] left-[-58px] top-[-120px] absolute flex flex-col justify-start items-start">
-              {Array.from({ length: 200 }).map((_, i) => (
+              {Array.from({ length: 120 }).map((_, i) => (
                 <div
                   key={i}
                   className="self-stretch h-4 rotate-[-45deg] origin-top-left outline outline-[0.5px] outline-[rgba(3,7,18,0.08)] outline-offset-[-0.25px]"

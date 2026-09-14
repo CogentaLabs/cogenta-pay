@@ -11,7 +11,7 @@ const faqData: FAQItem[] = [
   {
     question: "What is CogentaPay?",
     answer:
-      "CogentaPay is agentic checkout infrastructure that lets autonomous AI agents pay merchants directly — by card, by crypto, or over the x402 protocol. Merchants add one integration and instantly accept machine-initiated payments without CAPTCHAs, redirects, or manual review.",
+      "CogentaPay is agentic checkout infrastructure that lets autonomous AI agents pay merchants directly via multi-chain crypto settlement and the HTTP 402 protocol powered by Moove. Merchants add one integration and instantly accept machine-initiated payments without CAPTCHAs, redirects, or manual review.",
   },
   {
     question: "What is agentic payment with x402?",
