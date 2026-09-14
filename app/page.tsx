@@ -200,41 +200,12 @@ export default function LandingPage() {
               <div className="w-full max-w-[960px] lg:w-[960px] pt-2 sm:pt-4 pb-6 sm:pb-8 md:pb-10 px-2 sm:px-4 md:px-6 lg:px-11 flex flex-col justify-center items-center gap-2 relative z-5 my-8 sm:my-12 md:my-16 lg:my-16 mb-0 lg:pb-0">
                 <div
                   onClick={() => handleCardClick((activeCard + 1) % 3)}
-                  className="w-full max-w-[960px] lg:w-[960px] h-[220px] sm:h-[320px] md:h-[480px] lg:h-[695.55px] bg-white shadow-[0px_0px_0px_0.9056603908538818px_rgba(0,0,0,0.08)] overflow-hidden rounded-[6px] sm:rounded-[8px] lg:rounded-[9.06px] flex flex-col justify-start items-start cursor-pointer group relative"
+                  className="w-full max-w-[960px] lg:w-[960px] h-[200px] sm:h-[280px] md:h-[450px] lg:h-[695.55px] bg-white shadow-[0px_0px_0px_0.9056603908538818px_rgba(0,0,0,0.08)] overflow-hidden rounded-[6px] sm:rounded-[8px] lg:rounded-[9.06px] flex flex-col justify-start items-start cursor-pointer transition-transform duration-200 active:scale-[0.998]"
                   title="Click to cycle next view"
                 >
-                  {/* Interactive Header Bar */}
-                  <div className="w-full px-3 py-2 bg-[#FAF8F6] border-b border-[rgba(55,50,47,0.08)] flex justify-between items-center relative z-20">
-                    <div className="flex items-center gap-1.5">
-                      <div className="w-2.5 h-2.5 rounded-full bg-[#E5E5E5] border border-[rgba(0,0,0,0.1)]"></div>
-                      <div className="w-2.5 h-2.5 rounded-full bg-[#E5E5E5] border border-[rgba(0,0,0,0.1)]"></div>
-                      <div className="w-2.5 h-2.5 rounded-full bg-[#E5E5E5] border border-[rgba(0,0,0,0.1)]"></div>
-                    </div>
-
-                    {/* Step indicator tabs inside image container */}
-                    <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
-                      {[
-                        { title: "Agent Checkout", index: 0 },
-                        { title: "Multi-Chain Settlement", index: 1 },
-                        { title: "Merchant Analytics", index: 2 },
-                      ].map((tab) => (
-                        <button
-                          key={tab.index}
-                          onClick={() => handleCardClick(tab.index)}
-                          className={`px-2.5 py-1 rounded-full text-[11px] font-medium font-sans transition-all duration-200 cursor-pointer ${
-                            activeCard === tab.index
-                              ? "bg-[#37322F] text-white shadow-xs"
-                              : "bg-white text-[#605A57] border border-[#E0DEDB] hover:bg-[#F2F0ED]"
-                          }`}
-                        >
-                          {tab.title}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Dashboard Content & Images */}
-                  <div className="self-stretch flex-1 flex justify-start items-start relative">
+                  {/* Dashboard Content */}
+                  <div className="self-stretch flex-1 flex justify-start items-start">
+                    {/* Main Content */}
                     <div className="w-full h-full flex items-center justify-center">
                       <div className="relative w-full h-full overflow-hidden bg-[#FAFAF9]">
                         {/* Product Image 1 - Agent checkout */}
@@ -274,34 +245,6 @@ export default function LandingPage() {
                             alt="Merchant analytics dashboard with live agent volume and transaction metrics"
                             className="w-full h-full object-contain"
                           />
-                        </div>
-
-                        {/* Click Overlay Controls (Previous / Next Buttons on Hover) */}
-                        <div className="absolute inset-0 flex justify-between items-center px-4 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              handleCardClick((activeCard + 2) % 3)
-                            }}
-                            className="w-10 h-10 rounded-full bg-white/90 shadow-md border border-[#E0DEDB] flex items-center justify-center text-[#37322F] hover:bg-white hover:scale-105 transition-all pointer-events-auto cursor-pointer"
-                            title="Previous Image"
-                          >
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                              <path d="M15 18L9 12L15 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                            </svg>
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              handleCardClick((activeCard + 1) % 3)
-                            }}
-                            className="w-10 h-10 rounded-full bg-white/90 shadow-md border border-[#E0DEDB] flex items-center justify-center text-[#37322F] hover:bg-white hover:scale-105 transition-all pointer-events-auto cursor-pointer"
-                            title="Next Image"
-                          >
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                              <path d="M9 18L15 12L9 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                            </svg>
-                          </button>
                         </div>
                       </div>
                     </div>
@@ -681,10 +624,10 @@ function FeatureCard({
 }) {
   return (
     <div
-      className={`w-full md:flex-1 self-stretch px-6 py-5 overflow-hidden flex flex-col justify-start items-start gap-2 cursor-pointer relative border-b md:border-b-0 last:border-b-0 ${
+      className={`w-full md:flex-1 self-stretch px-6 py-5 overflow-hidden flex flex-col justify-start items-start gap-2 cursor-pointer relative border-b md:border-b-0 last:border-b-0 transition-all duration-200 ${
         isActive
           ? "bg-white shadow-[0px_0px_0px_0.75px_#E0DEDB_inset]"
-          : "border-l-0 border-r-0 md:border border-[#E0DEDB]/80"
+          : "border-l-0 border-r-0 md:border border-[#E0DEDB]/80 hover:bg-[#FAF8F6]"
       }`}
       onClick={onClick}
     >
