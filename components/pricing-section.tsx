@@ -57,54 +57,7 @@ export default function PricingSection() {
         </div>
       </div>
 
-      {/* Billing Toggle Section */}
-      <div className="self-stretch px-6 md:px-16 py-9 relative flex justify-center items-center gap-4">
-        {/* Horizontal line */}
-        <div className="w-full max-w-[1060px] h-0 absolute left-1/2 transform -translate-x-1/2 top-[63px] border-t border-[rgba(55,50,47,0.12)] z-0"></div>
 
-        {/* Toggle Container */}
-        <div className="p-3 relative bg-[rgba(55,50,47,0.03)] border border-[rgba(55,50,47,0.02)] backdrop-blur-[44px] backdrop-saturate-150 backdrop-brightness-110 flex justify-center items-center rounded-lg z-20 before:absolute before:inset-0 before:bg-white before:opacity-60 before:rounded-lg before:-z-10">
-          <div className="p-[2px] bg-[rgba(55,50,47,0.10)] shadow-[0px_1px_0px_white] rounded-[99px] border-[0.5px] border-[rgba(55,50,47,0.08)] flex justify-center items-center gap-[2px] relative">
-            <div
-              className={`absolute top-[2px] w-[calc(50%-1px)] h-[calc(100%-4px)] bg-white shadow-[0px_2px_4px_rgba(0,0,0,0.08)] rounded-[99px] transition-all duration-300 ease-in-out ${
-                billingPeriod === "annually" ? "left-[2px]" : "right-[2px]"
-              }`}
-            />
-
-            <button
-              onClick={() => setBillingPeriod("annually")}
-              className="px-4 py-1 rounded-[99px] flex justify-center items-center gap-2 transition-colors duration-300 relative z-10 flex-1"
-            >
-              <div
-                className={`text-[13px] font-medium leading-5 font-sans transition-colors duration-300 ${
-                  billingPeriod === "annually" ? "text-[#37322F]" : "text-[#6B7280]"
-                }`}
-              >
-                Annually
-              </div>
-            </button>
-
-            <button
-              onClick={() => setBillingPeriod("monthly")}
-              className="px-4 py-1 rounded-[99px] flex justify-center items-center gap-2 transition-colors duration-300 relative z-10 flex-1"
-            >
-              <div
-                className={`text-[13px] font-medium leading-5 font-sans transition-colors duration-300 ${
-                  billingPeriod === "monthly" ? "text-[#37322F]" : "text-[#6B7280]"
-                }`}
-              >
-                Monthly
-              </div>
-            </button>
-          </div>
-
-          {/* Decorative dots */}
-          <div className="w-[3px] h-[3px] absolute left-[5px] top-[5.25px] bg-[rgba(55,50,47,0.10)] shadow-[0px_0px_0.5px_rgba(0,0,0,0.12)] rounded-[99px]"></div>
-          <div className="w-[3px] h-[3px] absolute right-[5px] top-[5.25px] bg-[rgba(55,50,47,0.10)] shadow-[0px_0px_0.5px_rgba(0,0,0,0.12)] rounded-[99px]"></div>
-          <div className="w-[3px] h-[3px] absolute left-[5px] bottom-[5.25px] bg-[rgba(55,50,47,0.10)] shadow-[0px_0px_0.5px_rgba(0,0,0,0.12)] rounded-[99px]"></div>
-          <div className="w-[3px] h-[3px] absolute right-[5px] bottom-[5.25px] bg-[rgba(55,50,47,0.10)] shadow-[0px_0px_0.5px_rgba(0,0,0,0.12)] rounded-[99px]"></div>
-        </div>
-      </div>
 
       {/* Pricing Cards Section */}
       <div className="self-stretch border-b border-t border-[rgba(55,50,47,0.12)] flex justify-center items-center">
@@ -137,32 +90,10 @@ export default function PricingSection() {
                 <div className="self-stretch flex flex-col justify-start items-start gap-2">
                   <div className="flex flex-col justify-start items-start gap-1">
                     <div className="relative h-[60px] flex items-center text-[#37322F] text-5xl font-medium leading-[60px] font-serif">
-                      <span className="invisible">${pricing.starter[billingPeriod]}</span>
-                      <span
-                        className="absolute inset-0 flex items-center transition-all duration-500"
-                        style={{
-                          opacity: billingPeriod === "annually" ? 1 : 0,
-                          transform: `scale(${billingPeriod === "annually" ? 1 : 0.8})`,
-                          filter: `blur(${billingPeriod === "annually" ? 0 : 4}px)`,
-                        }}
-                        aria-hidden={billingPeriod !== "annually"}
-                      >
-                        ${pricing.starter.annually}
-                      </span>
-                      <span
-                        className="absolute inset-0 flex items-center transition-all duration-500"
-                        style={{
-                          opacity: billingPeriod === "monthly" ? 1 : 0,
-                          transform: `scale(${billingPeriod === "monthly" ? 1 : 0.8})`,
-                          filter: `blur(${billingPeriod === "monthly" ? 0 : 4}px)`,
-                        }}
-                        aria-hidden={billingPeriod !== "monthly"}
-                      >
-                        ${pricing.starter.monthly}
-                      </span>
+                      <span>Free</span>
                     </div>
                     <div className="text-[#847971] text-sm font-medium font-sans">
-                      per {billingPeriod === "monthly" ? "month" : "year"}, per user.
+                      forever.
                     </div>
                   </div>
                 </div>
@@ -216,33 +147,11 @@ export default function PricingSection() {
 
                 <div className="self-stretch flex flex-col justify-start items-start gap-2">
                   <div className="flex flex-col justify-start items-start gap-1">
-                    <div className="relative h-[60px] flex items-center text-[#F0EFEE] text-5xl font-medium leading-[60px] font-serif">
-                      <span className="invisible">${pricing.professional[billingPeriod]}</span>
-                      <span
-                        className="absolute inset-0 flex items-center transition-all duration-500"
-                        style={{
-                          opacity: billingPeriod === "annually" ? 1 : 0,
-                          transform: `scale(${billingPeriod === "annually" ? 1 : 0.8})`,
-                          filter: `blur(${billingPeriod === "annually" ? 0 : 4}px)`,
-                        }}
-                        aria-hidden={billingPeriod !== "annually"}
-                      >
-                        ${pricing.professional.annually}
-                      </span>
-                      <span
-                        className="absolute inset-0 flex items-center transition-all duration-500"
-                        style={{
-                          opacity: billingPeriod === "monthly" ? 1 : 0,
-                          transform: `scale(${billingPeriod === "monthly" ? 1 : 0.8})`,
-                          filter: `blur(${billingPeriod === "monthly" ? 0 : 4}px)`,
-                        }}
-                        aria-hidden={billingPeriod !== "monthly"}
-                      >
-                        ${pricing.professional.monthly}
-                      </span>
+                    <div className="relative h-[60px] flex items-center text-[#F0EFEE] text-3xl font-medium leading-[60px] font-serif">
+                      <span>Coming Soon</span>
                     </div>
                     <div className="text-[#D2C6BF] text-sm font-medium font-sans">
-                      per {billingPeriod === "monthly" ? "month" : "year"}, per user.
+                      pricing details to be announced.
                     </div>
                   </div>
                 </div>
@@ -299,32 +208,10 @@ export default function PricingSection() {
                 <div className="self-stretch flex flex-col justify-start items-start gap-2">
                   <div className="flex flex-col justify-start items-start gap-1">
                     <div className="relative h-[60px] flex items-center text-[#37322F] text-5xl font-medium leading-[60px] font-serif">
-                      <span className="invisible">${pricing.enterprise[billingPeriod]}</span>
-                      <span
-                        className="absolute inset-0 flex items-center transition-all duration-500"
-                        style={{
-                          opacity: billingPeriod === "annually" ? 1 : 0,
-                          transform: `scale(${billingPeriod === "annually" ? 1 : 0.8})`,
-                          filter: `blur(${billingPeriod === "annually" ? 0 : 4}px)`,
-                        }}
-                        aria-hidden={billingPeriod !== "annually"}
-                      >
-                        ${pricing.enterprise.annually}
-                      </span>
-                      <span
-                        className="absolute inset-0 flex items-center transition-all duration-500"
-                        style={{
-                          opacity: billingPeriod === "monthly" ? 1 : 0,
-                          transform: `scale(${billingPeriod === "monthly" ? 1 : 0.8})`,
-                          filter: `blur(${billingPeriod === "monthly" ? 0 : 4}px)`,
-                        }}
-                        aria-hidden={billingPeriod !== "monthly"}
-                      >
-                        ${pricing.enterprise.monthly}
-                      </span>
+                      <span>Custom</span>
                     </div>
                     <div className="text-[#847971] text-sm font-medium font-sans">
-                      per {billingPeriod === "monthly" ? "month" : "year"}, per user.
+                      tailored to your volume.
                     </div>
                   </div>
                 </div>

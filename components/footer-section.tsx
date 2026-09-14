@@ -52,74 +52,18 @@ export default function FooterSection() {
           </div>
         </div>
 
-        {/* Navigation Links */}
-        <div className="self-stretch p-4 md:p-8 flex flex-col sm:flex-row flex-wrap justify-start sm:justify-between items-start gap-6 md:gap-8">
-          {/* Product Column */}
-
-          {/* Product Column */}
-          <div className="flex flex-col justify-start items-start gap-3 flex-1 min-w-[120px]">
-            <div className="self-stretch text-[rgba(73,66,61,0.50)] text-sm font-medium leading-5 font-sans">
-              Product
-            </div>
-            <div className="flex flex-col justify-end items-start gap-2">
-              <div className="text-[#49423D] text-sm font-normal leading-5 font-sans cursor-pointer hover:text-[#37322F] transition-colors">
-                WooCommerce Plugin
-              </div>
-              <div className="text-[#49423D] text-sm font-normal leading-5 font-sans cursor-pointer hover:text-[#37322F] transition-colors">
-                React SDK
-              </div>
-              <div className="text-[#49423D] text-sm font-normal leading-5 font-sans cursor-pointer hover:text-[#37322F] transition-colors">
-                Agent Catalog (.well-known)
-              </div>
-              <div className="text-[#49423D] text-sm font-normal leading-5 font-sans cursor-pointer hover:text-[#37322F] transition-colors">
-                Moove Multi-Chain
-              </div>
-              <div className="text-[#49423D] text-sm font-normal leading-5 font-sans cursor-pointer hover:text-[#37322F] transition-colors">
-                Merchant Analytics
-              </div>
-            </div>
-          </div>
-
-          {/* Company Column */}
-          <div className="flex flex-col justify-start items-start gap-3 flex-1 min-w-[120px]">
-            <div className="text-[rgba(73,66,61,0.50)] text-sm font-medium leading-5 font-sans">Company</div>
-            <div className="flex flex-col justify-center items-start gap-2">
-              <div className="text-[#49423D] text-sm font-normal leading-5 font-sans cursor-pointer hover:text-[#37322F] transition-colors">
-                About us
-              </div>
-              <div className="text-[#49423D] text-sm font-normal leading-5 font-sans cursor-pointer hover:text-[#37322F] transition-colors">
-                Our team
-              </div>
-              <div className="text-[#49423D] text-sm font-normal leading-5 font-sans cursor-pointer hover:text-[#37322F] transition-colors">
-                Careers
-              </div>
-              <div className="text-[#49423D] text-sm font-normal leading-5 font-sans cursor-pointer hover:text-[#37322F] transition-colors">
-                Brand
-              </div>
-              <div className="text-[#49423D] text-sm font-normal leading-5 font-sans cursor-pointer hover:text-[#37322F] transition-colors">
-                Contact
-              </div>
-            </div>
-          </div>
-
-          {/* Resources Column */}
-          <div className="flex flex-col justify-start items-start gap-3 flex-1 min-w-[120px]">
+        <div className="self-stretch p-4 md:p-8 flex flex-col sm:flex-row flex-wrap justify-start sm:justify-end items-start gap-6 md:gap-8">
+          <div className="flex flex-col justify-start items-start gap-3 min-w-[120px]">
             <div className="text-[rgba(73,66,61,0.50)] text-sm font-medium leading-5 font-sans">Resources</div>
-            <div className="flex flex-col justify-center items-center gap-2">
-              <div className="self-stretch text-[#49423D] text-sm font-normal leading-5 font-sans cursor-pointer hover:text-[#37322F] transition-colors">
-                Terms of use
-              </div>
+            <div className="flex flex-col justify-center items-start gap-2">
               <div className="self-stretch text-[#49423D] text-sm font-normal leading-5 font-sans cursor-pointer hover:text-[#37322F] transition-colors">
                 API Reference
               </div>
               <div className="self-stretch text-[#49423D] text-sm font-normal leading-5 font-sans cursor-pointer hover:text-[#37322F] transition-colors">
+                Agent Catalog (.well-known)
+              </div>
+              <div className="self-stretch text-[#49423D] text-sm font-normal leading-5 font-sans cursor-pointer hover:text-[#37322F] transition-colors">
                 Documentation
-              </div>
-              <div className="self-stretch text-[#49423D] text-sm font-normal leading-5 font-sans cursor-pointer hover:text-[#37322F] transition-colors">
-                Community
-              </div>
-              <div className="self-stretch text-[#49423D] text-sm font-normal leading-5 font-sans cursor-pointer hover:text-[#37322F] transition-colors">
-                Support
               </div>
             </div>
           </div>

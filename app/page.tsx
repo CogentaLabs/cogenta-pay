@@ -95,11 +95,11 @@ export default function LandingPage() {
 
               <div className="w-full max-w-[calc(100%-32px)] sm:max-w-[calc(100%-48px)] md:max-w-[calc(100%-64px)] lg:max-w-[700px] lg:w-[700px] h-10 sm:h-11 md:h-12 py-1.5 sm:py-2 px-3 sm:px-4 md:px-4 pr-2 sm:pr-3 bg-[#F7F5F3] backdrop-blur-sm shadow-[0px_0px_0px_2px_white] overflow-hidden rounded-[50px] flex justify-between items-center relative z-30">
                 <div className="flex justify-center items-center">
-                  <div className="flex justify-start items-center gap-1.5">
+                  <div className="flex flex-col justify-center items-start">
                     <div className="flex flex-col justify-center text-[#2F3037] text-sm sm:text-base md:text-lg lg:text-xl font-medium leading-5 font-sans">
                       CogentaPay
                     </div>
-                    <div className="hidden sm:flex flex-col justify-center text-[rgba(49,45,43,0.55)] text-[10px] md:text-[11px] font-medium leading-[14px] font-sans">
+                    <div className="hidden sm:flex flex-col justify-center text-[rgba(49,45,43,0.55)] text-[9px] md:text-[10px] font-medium leading-[12px] font-sans">
                       by Cogenta Labs
                     </div>
                   </div>
@@ -127,7 +127,7 @@ export default function LandingPage() {
                   </div>
                   <div className="px-2 sm:px-3 md:px-[14px] py-1 sm:py-[6px] bg-[#37322F] shadow-[0px_1px_2px_rgba(55,50,47,0.12)] overflow-hidden rounded-full flex justify-center items-center">
                     <div className="flex flex-col justify-center text-white text-xs md:text-[13px] font-medium leading-5 font-sans">
-                      Install Plugin
+                      Read Specs
                     </div>
                   </div>
                 </div>
@@ -154,7 +154,7 @@ export default function LandingPage() {
                   <div className="h-10 sm:h-11 md:h-12 px-6 sm:px-8 md:px-10 lg:px-10 py-2 sm:py-[6px] relative bg-[#37322F] shadow-[0px_0px_0px_2.5px_rgba(255,255,255,0.08)_inset] overflow-hidden rounded-full flex justify-center items-center cursor-pointer">
                     <div className="w-20 sm:w-24 md:w-28 lg:w-44 h-[41px] absolute left-0 top-[-0.5px] bg-gradient-to-b from-[rgba(255,255,255,0)] to-[rgba(0,0,0,0.10)] mix-blend-multiply"></div>
                     <div className="flex flex-col justify-center text-white text-sm sm:text-base md:text-[15px] font-medium leading-5 font-sans">
-                      Deploy WooCommerce Plugin (Free)
+                      Read Technical Specs
                     </div>
                   </div>
                   <div className="h-10 sm:h-11 md:h-12 px-6 sm:px-8 md:px-10 py-2 sm:py-[6px] relative bg-white shadow-[0px_1px_2px_rgba(55,50,47,0.12)] overflow-hidden rounded-full flex justify-center items-center border border-[rgba(55,50,47,0.12)] cursor-pointer">
@@ -332,14 +332,14 @@ export default function LandingPage() {
                   <div className="flex-1 grid grid-cols-2 sm:grid-cols-4 md:grid-cols-4 gap-0 border-l border-r border-[rgba(55,50,47,0.12)]">
                     {/* Logo Grid - Responsive grid */}
                     {[
-                      "Google AP2",
-                      "Coinbase x402",
-                      "OpenAI ACP",
-                      "Stripe ACP",
-                      "Moove Network",
-                      "ElizaOS",
-                      "LangChain",
-                      "ERC-4337",
+                      { name: "Google AP2", icon: "https://cdn.simpleicons.org/google/37322F" },
+                      { name: "Coinbase x402", icon: "https://cdn.simpleicons.org/coinbase/37322F" },
+                      { name: "OpenAI ACP", icon: "https://cdn.simpleicons.org/openai/37322F" },
+                      { name: "Stripe ACP", icon: "https://cdn.simpleicons.org/stripe/37322F" },
+                      { name: "Moove Network", icon: "https://cdn.simpleicons.org/monzo/37322F" },
+                      { name: "ElizaOS", icon: "https://cdn.simpleicons.org/linux/37322F" },
+                      { name: "LangChain", icon: "https://cdn.simpleicons.org/langchain/37322F" },
+                      { name: "ERC-4337", icon: "https://cdn.simpleicons.org/ethereum/37322F" },
                     ].map((partner, index) => {
                       const isMobileFirstColumn = index % 2 === 0
                       const isMobileLastColumn = index % 2 === 1
@@ -366,11 +366,11 @@ export default function LandingPage() {
                             border-[#E3E2E1]
                           `}
                         >
-                          <div className="w-6 h-6 xs:w-7 xs:h-7 sm:w-8 sm:h-8 md:w-9 md:h-9 lg:w-10 lg:h-10 relative shadow-[0px_-4px_8px_rgba(255,255,255,0.64)_inset] overflow-hidden rounded-full">
-                            <img src="/horizon-icon.svg" alt="" className="w-full h-full object-contain" />
+                          <div className="w-6 h-6 xs:w-7 xs:h-7 sm:w-8 sm:h-8 md:w-9 md:h-9 lg:w-10 lg:h-10 relative flex justify-center items-center overflow-hidden">
+                            <img src={partner.icon} alt={partner.name} className="w-6 h-6 object-contain" />
                           </div>
                           <div className="text-center flex justify-center flex-col text-[#37322F] text-sm xs:text-base sm:text-lg md:text-xl lg:text-xl font-medium leading-tight md:leading-9 font-sans">
-                            {partner}
+                            {partner.name}
                           </div>
                         </div>
                       )
@@ -444,13 +444,21 @@ export default function LandingPage() {
                           keys and settle programmatically.
                         </p>
                       </div>
-                      <div className="w-full h-[200px] sm:h-[250px] md:h-[300px] rounded-lg flex items-center justify-center overflow-hidden">
-                        <SmartSimpleBrilliant
-                          width="100%"
-                          height="100%"
-                          theme="light"
-                          className="scale-50 sm:scale-65 md:scale-75 lg:scale-90"
-                        />
+                      <div className="w-full h-[200px] sm:h-[250px] md:h-[300px] rounded-lg flex items-center justify-center overflow-hidden bg-white shadow-sm border border-[rgba(55,50,47,0.08)]">
+                        <div className="flex flex-col gap-3 w-full h-full p-6 bg-[#F7F5F3]">
+                          <div className="flex justify-between items-center bg-white p-3 rounded shadow-sm border border-[rgba(0,0,0,0.05)]">
+                            <span className="text-xs font-mono text-gray-500">HTTP 402</span>
+                            <span className="text-xs font-medium bg-gray-100 px-2 py-1 rounded text-gray-600">Payment Required</span>
+                          </div>
+                          <div className="flex justify-between items-center bg-white p-3 rounded shadow-sm border border-[rgba(0,0,0,0.05)] opacity-80">
+                            <span className="text-xs font-mono text-gray-500">Sign Mandate</span>
+                            <span className="text-xs font-medium bg-blue-50 px-2 py-1 rounded text-blue-600">0x8f...3a9</span>
+                          </div>
+                          <div className="flex justify-between items-center bg-white p-3 rounded shadow-sm border border-[rgba(0,0,0,0.05)] opacity-60">
+                            <span className="text-xs font-mono text-gray-500">Execute Tx</span>
+                            <span className="text-xs font-medium bg-green-50 px-2 py-1 rounded text-green-600">Success</span>
+                          </div>
+                        </div>
                       </div>
                     </div>
 
@@ -465,13 +473,25 @@ export default function LandingPage() {
                           endpoints in clean JSON — no HTML parsing.
                         </p>
                       </div>
-                      <div className="w-full h-[200px] sm:h-[250px] md:h-[300px] rounded-lg flex overflow-hidden text-right items-center justify-center">
-                        <YourWorkInSync
-                          width="400"
-                          height="250"
-                          theme="light"
-                          className="scale-60 sm:scale-75 md:scale-90"
-                        />
+                      <div className="w-full h-[200px] sm:h-[250px] md:h-[300px] rounded-lg flex overflow-hidden items-center justify-center bg-[#1E1E1E] border border-[rgba(55,50,47,0.08)]">
+                        <div className="text-left w-full h-full p-4 md:p-6 overflow-hidden">
+                          <pre className="text-[10px] md:text-xs text-[#D4D4D4] font-mono leading-relaxed">
+{`{
+  "name": "Data API Access",
+  "endpoint": "/v1/data/quote",
+  "price": {
+    "amount": "12.00",
+    "currency": "USDC",
+    "interval": "one_time"
+  },
+  "supported_networks": [
+    "ethereum",
+    "base",
+    "polygon"
+  ]
+}`}
+                          </pre>
+                        </div>
                       </div>
                     </div>
 
@@ -486,9 +506,15 @@ export default function LandingPage() {
                           merchants receive guaranteed USDC.
                         </p>
                       </div>
-                      <div className="w-full h-[200px] sm:h-[250px] md:h-[300px] rounded-lg flex overflow-hidden justify-center items-center relative bg-transparent">
-                        <div className="w-full h-full flex items-center justify-center bg-transparent">
-                          <EffortlessIntegration width={400} height={250} className="max-w-full max-h-full" />
+                      <div className="w-full h-[200px] sm:h-[250px] md:h-[300px] rounded-lg flex overflow-hidden justify-center items-center relative bg-white border border-[rgba(55,50,47,0.08)] shadow-sm">
+                        <div className="w-full h-full flex flex-col items-center justify-center p-6">
+                          <div className="flex gap-4 items-center">
+                            <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center"><img src="https://cdn.simpleicons.org/ethereum/3b82f6" className="w-5 h-5"/></div>
+                            <div className="h-0.5 w-8 bg-gray-200"></div>
+                            <div className="w-12 h-12 rounded-xl bg-gray-900 flex items-center justify-center shadow-lg"><span className="text-white font-bold text-xl">M</span></div>
+                            <div className="h-0.5 w-8 bg-gray-200"></div>
+                            <div className="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center"><img src="https://cdn.simpleicons.org/usdc/22c55e" className="w-5 h-5"/></div>
+                          </div>
                         </div>
                         {/* Gradient mask for soft bottom edge */}
                         <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-[#F7F5F3] to-transparent pointer-events-none"></div>
@@ -506,23 +532,16 @@ export default function LandingPage() {
                           on-chain proof of settlement.
                         </p>
                       </div>
-                      <div className="w-full h-[200px] sm:h-[250px] md:h-[300px] rounded-lg flex overflow-hidden items-center justify-center relative">
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <NumbersThatSpeak
-                            width="100%"
-                            height="100%"
-                            theme="light"
-                            className="w-full h-full object-contain"
-                          />
-                        </div>
-                        {/* Gradient mask for soft bottom edge */}
-                        <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-[#F7F5F3] to-transparent pointer-events-none"></div>
-                        {/* Fallback content if component doesn't render */}
-                        <div className="absolute inset-0 flex items-center justify-center opacity-20 hidden">
-                          <div className="flex flex-col items-center gap-2 p-4">
-                            <div className="w-3/4 h-full bg-green-500 rounded-full"></div>
+                      <div className="w-full h-[200px] sm:h-[250px] md:h-[300px] rounded-lg flex overflow-hidden items-center justify-center relative bg-white border border-[rgba(55,50,47,0.08)] shadow-sm">
+                        <div className="w-full h-full p-6 flex flex-col gap-4">
+                          <div className="w-full p-4 border border-green-200 bg-green-50 rounded-lg">
+                            <div className="text-green-800 text-xs font-mono mb-1">Receipt: 0x4a...9f2</div>
+                            <div className="text-green-600 text-sm font-medium">Settled 12.00 USDC</div>
                           </div>
-                          <div className="text-sm text-green-600">Growth Rate</div>
+                          <div className="w-full p-4 border border-blue-200 bg-blue-50 rounded-lg opacity-60">
+                            <div className="text-blue-800 text-xs font-mono mb-1">Receipt: 0x8b...1c5</div>
+                            <div className="text-blue-600 text-sm font-medium">Settled 45.50 USDC</div>
+                          </div>
                         </div>
                       </div>
                     </div>
