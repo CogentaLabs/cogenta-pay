@@ -63,19 +63,19 @@ export default function FooterSection() {
             </div>
             <div className="flex flex-col justify-end items-start gap-2">
               <div className="text-[#49423D] text-sm font-normal leading-5 font-sans cursor-pointer hover:text-[#37322F] transition-colors">
-                Features
+                WooCommerce Plugin
               </div>
               <div className="text-[#49423D] text-sm font-normal leading-5 font-sans cursor-pointer hover:text-[#37322F] transition-colors">
-                Pricing
+                React SDK
               </div>
               <div className="text-[#49423D] text-sm font-normal leading-5 font-sans cursor-pointer hover:text-[#37322F] transition-colors">
-                Integrations
+                Agent Catalog (.well-known)
               </div>
               <div className="text-[#49423D] text-sm font-normal leading-5 font-sans cursor-pointer hover:text-[#37322F] transition-colors">
-                Real-time Previews
+                Moove Multi-Chain
               </div>
               <div className="text-[#49423D] text-sm font-normal leading-5 font-sans cursor-pointer hover:text-[#37322F] transition-colors">
-                Multi-Agent Coding
+                Merchant Analytics
               </div>
             </div>
           </div>

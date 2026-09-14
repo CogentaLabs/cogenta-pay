@@ -107,30 +107,30 @@ const EffortlessIntegration: React.FC<EffortlessIntegrationProps> = ({ width = 4
           position: "absolute",
         }}
       >
-        {/* Central hub */}
+        {/* Center Moove icon */}
         <div
           style={{
-            width: "72px",
-            height: "72px",
-            left: `${centerX - 36}px`,
-            top: `${centerY - 36}px`,
+            width: "56px",
+            height: "56px",
+            left: `${centerX - 28}px`,
+            top: `${centerY - 28}px`,
             position: "absolute",
-            background: "#37322f",
-            boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.15)",
+            background: "#37322F",
+            boxShadow: "0px 6px 16px rgba(0, 0, 0, 0.2)",
             borderRadius: "99px",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             fontFamily: "'Inter', sans-serif",
-            fontWeight: 700,
-            fontSize: "32px",
-            color: "#ffffff",
+            fontWeight: 800,
+            fontSize: "24px",
+            color: "#FFCE31",
           }}
         >
-          b
+          M
         </div>
 
-        {/* GitHub - 180° (left) */}
+        {/* Ethereum - 180° (left) */}
         <div
           style={{
             width: "32px",
@@ -138,7 +138,7 @@ const EffortlessIntegration: React.FC<EffortlessIntegrationProps> = ({ width = 4
             left: `${getPositionOnRing(80, Math.PI).x - 16}px`,
             top: `${getPositionOnRing(80, Math.PI).y - 16}px`,
             position: "absolute",
-            background: "#000000",
+            background: "#3C3C3D",
             boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.15)",
             borderRadius: "50%",
             display: "flex",
@@ -147,8 +147,8 @@ const EffortlessIntegration: React.FC<EffortlessIntegrationProps> = ({ width = 4
           }}
         >
           <img
-            src="https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/github.svg"
-            alt="GitHub"
+            src="https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/ethereum.svg"
+            alt="Ethereum"
             style={{
               width: "18px",
               height: "18px",
@@ -157,7 +157,7 @@ const EffortlessIntegration: React.FC<EffortlessIntegrationProps> = ({ width = 4
           />
         </div>
 
-        {/* Slack - 0° (right) */}
+        {/* Solana - 0° (right) */}
         <div
           style={{
             width: "32px",
@@ -165,138 +165,6 @@ const EffortlessIntegration: React.FC<EffortlessIntegrationProps> = ({ width = 4
             left: `${getPositionOnRing(80, 0).x - 16}px`,
             top: `${getPositionOnRing(80, 0).y - 16}px`,
             position: "absolute",
-            background: "#ffffff",
-            boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.15)",
-            borderRadius: "50%",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <img
-            src="https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/slack.svg"
-            alt="Slack"
-            style={{
-              width: "18px",
-              height: "18px",
-            }}
-          />
-        </div>
-
-        {/* Figma - 315° (top-right) */}
-        <div
-          style={{
-            width: "32px",
-            height: "32px",
-            left: `${getPositionOnRing(120, -Math.PI / 4).x - 16}px`,
-            top: `${getPositionOnRing(120, -Math.PI / 4).y - 16}px`,
-            position: "absolute",
-            background: "#EEEFE8",
-            boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.15)",
-            borderRadius: "50%",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <img
-            src="https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/figma.svg"
-            alt="Figma"
-            style={{
-              width: "16px",
-              height: "16px",
-            }}
-          />
-        </div>
-
-        {/* Discord - 135° (bottom-left) */}
-        <div
-          style={{
-            width: "32px",
-            height: "32px",
-            left: `${getPositionOnRing(120, (3 * Math.PI) / 4).x - 16}px`,
-            top: `${getPositionOnRing(120, (3 * Math.PI) / 4).y - 16}px`,
-            position: "absolute",
-            background: "#5865F2",
-            boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.15)",
-            borderRadius: "50%",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <img
-            src="https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/discord.svg"
-            alt="Discord"
-            style={{
-              width: "18px",
-              height: "18px",
-              filter: "brightness(0) invert(1)",
-            }}
-          />
-        </div>
-
-        {/* Notion - 225° (bottom-left diagonal) */}
-        <div
-          style={{
-            width: "32px",
-            height: "32px",
-            left: `${getPositionOnRing(120, (5 * Math.PI) / 4).x - 16}px`,
-            top: `${getPositionOnRing(120, (5 * Math.PI) / 4).y - 16}px`,
-            position: "absolute",
-            background: "#ffffff",
-            boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.15)",
-            borderRadius: "50%",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <img
-            src="https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/notion.svg"
-            alt="Notion"
-            style={{
-              width: "18px",
-              height: "18px",
-            }}
-          />
-        </div>
-
-        {/* Stripe - 180° (left) */}
-        <div
-          style={{
-            width: "32px",
-            height: "32px",
-            left: `${getPositionOnRing(160, Math.PI).x - 16}px`,
-            top: `${getPositionOnRing(160, Math.PI).y - 16}px`,
-            position: "absolute",
-            background: "#635BFF",
-            boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.15)",
-            borderRadius: "50%",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <img
-            src="https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/stripe.svg"
-            alt="Stripe"
-            style={{
-              width: "18px",
-              height: "18px",
-              filter: "brightness(0) invert(1)",
-            }}
-          />
-        </div>
-
-        {/* Framer - 0° (right) */}
-        <div
-          style={{
-            width: "32px",
-            height: "32px",
-            left: `${getPositionOnRing(160, 0).x - 16}px`,
-            top: `${getPositionOnRing(160, 0).y - 16}px`,
-            position: "absolute",
             background: "#000000",
             boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.15)",
             borderRadius: "50%",
@@ -306,11 +174,146 @@ const EffortlessIntegration: React.FC<EffortlessIntegrationProps> = ({ width = 4
           }}
         >
           <img
-            src="https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/framer.svg"
-            alt="Framer"
+            src="https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/solana.svg"
+            alt="Solana"
             style={{
-              width: "16px",
-              height: "16px",
+              width: "18px",
+              height: "18px",
+              filter: "brightness(0) invert(1)",
+            }}
+          />
+        </div>
+
+        {/* Polygon - 315° (top-right) */}
+        <div
+          style={{
+            width: "32px",
+            height: "32px",
+            left: `${getPositionOnRing(120, -Math.PI / 4).x - 16}px`,
+            top: `${getPositionOnRing(120, -Math.PI / 4).y - 16}px`,
+            position: "absolute",
+            background: "#8247E5",
+            boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.15)",
+            borderRadius: "50%",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <img
+            src="https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/polygon.svg"
+            alt="Polygon"
+            style={{
+              width: "18px",
+              height: "18px",
+              filter: "brightness(0) invert(1)",
+            }}
+          />
+        </div>
+
+        {/* Arbitrum - 135° (bottom-left) */}
+        <div
+          style={{
+            width: "32px",
+            height: "32px",
+            left: `${getPositionOnRing(120, (3 * Math.PI) / 4).x - 16}px`,
+            top: `${getPositionOnRing(120, (3 * Math.PI) / 4).y - 16}px`,
+            position: "absolute",
+            background: "#28A0F0",
+            boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.15)",
+            borderRadius: "50%",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <img
+            src="https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/arbitrum.svg"
+            alt="Arbitrum"
+            style={{
+              width: "18px",
+              height: "18px",
+              filter: "brightness(0) invert(1)",
+            }}
+          />
+        </div>
+
+        {/* Base / Coinbase - 225° (bottom-left diagonal) */}
+        <div
+          style={{
+            width: "32px",
+            height: "32px",
+            left: `${getPositionOnRing(120, (5 * Math.PI) / 4).x - 16}px`,
+            top: `${getPositionOnRing(120, (5 * Math.PI) / 4).y - 16}px`,
+            position: "absolute",
+            background: "#0052FF",
+            boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.15)",
+            borderRadius: "50%",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <img
+            src="https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/coinbase.svg"
+            alt="Base"
+            style={{
+              width: "18px",
+              height: "18px",
+              filter: "brightness(0) invert(1)",
+            }}
+          />
+        </div>
+
+        {/* WooCommerce - 180° (outer left) */}
+        <div
+          style={{
+            width: "32px",
+            height: "32px",
+            left: `${getPositionOnRing(160, Math.PI).x - 16}px`,
+            top: `${getPositionOnRing(160, Math.PI).y - 16}px`,
+            position: "absolute",
+            background: "#96588A",
+            boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.15)",
+            borderRadius: "50%",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <img
+            src="https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/woocommerce.svg"
+            alt="WooCommerce"
+            style={{
+              width: "18px",
+              height: "18px",
+              filter: "brightness(0) invert(1)",
+            }}
+          />
+        </div>
+
+        {/* Bitcoin - 0° (outer right) */}
+        <div
+          style={{
+            width: "32px",
+            height: "32px",
+            left: `${getPositionOnRing(160, 0).x - 16}px`,
+            top: `${getPositionOnRing(160, 0).y - 16}px`,
+            position: "absolute",
+            background: "#F7931A",
+            boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.15)",
+            borderRadius: "50%",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <img
+            src="https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/bitcoin.svg"
+            alt="Bitcoin"
+            style={{
+              width: "18px",
+              height: "18px",
               filter: "brightness(0) invert(1)",
             }}
           />

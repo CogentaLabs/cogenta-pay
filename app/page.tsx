@@ -186,42 +186,42 @@ export default function LandingPage() {
                     {/* Main Content */}
                     <div className="w-full h-full flex items-center justify-center">
                       <div className="relative w-full h-full overflow-hidden">
-                        {/* Product Image 1 - Plan your schedules */}
+                        {/* Product Image 1 - Agent checkout */}
                         <div
                           className={`absolute inset-0 transition-all duration-500 ease-in-out ${
                             activeCard === 0 ? "opacity-100 scale-100 blur-0" : "opacity-0 scale-95 blur-sm"
                           }`}
                         >
                           <img
-                            src="/agent-transactions-dashboard.png"
-                            alt="Agent transactions dashboard showing x402, card, and crypto payment rails"
-                            className="w-full h-full object-cover"
+                            src="/section-image/checkout.png"
+                            alt="Agent checkout flow showing autonomous HTTP 402 negotiation and settlement"
+                            className="w-full h-full object-contain"
                           />
                         </div>
 
-                        {/* Product Image 2 - Data to insights */}
+                        {/* Product Image 2 - Multi-chain settlement */}
                         <div
                           className={`absolute inset-0 transition-all duration-500 ease-in-out ${
                             activeCard === 1 ? "opacity-100 scale-100 blur-0" : "opacity-0 scale-95 blur-sm"
                           }`}
                         >
                           <img
-                            src="/settlement-analytics-dashboard.png"
-                            alt="Settlement analytics dashboard with payment volume and rail breakdown"
-                            className="w-full h-full object-cover"
+                            src="/section-image/multi-chain.png"
+                            alt="Multi-chain settlement via Moove rails across 37+ blockchains"
+                            className="w-full h-full object-contain"
                           />
                         </div>
 
-                        {/* Product Image 3 - Data visualization */}
+                        {/* Product Image 3 - Merchant analytics */}
                         <div
                           className={`absolute inset-0 transition-all duration-500 ease-in-out ${
                             activeCard === 2 ? "opacity-100 scale-100 blur-0" : "opacity-0 scale-95 blur-sm"
                           }`}
                         >
                           <img
-                            src="/payment-rails-visualization.png"
-                            alt="Cross-chain settlement visualization across Base, Solana, and Ethereum"
-                            className="w-full h-full object-cover"
+                            src="/section-image/analytics.png"
+                            alt="Merchant analytics dashboard with live agent volume and transaction metrics"
+                            className="w-full h-full object-contain"
                           />
                         </div>
                       </div>
