@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
     }
 
     // If moove_link_id is provided, verify settlement status against Moove Receive Agent
-    let mooveStatus = { status: "completed", isLive: false }
+    let mooveStatus: any = { status: "active", isLive: false }
     if (moove_link_id) {
       try {
         mooveStatus = await mooveReceiveAgent.getPaymentLinkStatus(moove_link_id)
@@ -22,29 +22,34 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const txHash = `0x${Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join("")}`
+    const isCompleted = mooveStatus.status === "completed"
+    const txHash = isCompleted && mooveStatus.transactionUrl
+      ? mooveStatus.transactionUrl
+      : `0x${Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join("")}`
     const blockNumber = Math.floor(18000000 + Math.random() * 500000)
-    const latencyMs = Math.floor(650 + Math.random() * 300)
+    const latencyMs = Math.floor(450 + Math.random() * 250)
 
     const receipt = {
-      status: "settled",
+      status: isCompleted ? "settled" : "awaiting_payment",
       order_id,
       moove_link_id: moove_link_id || null,
       moove_verified_live: mooveStatus.isLive,
+      moove_live_status: mooveStatus.status || "active",
       merchant: {
         name: "Cogenta Machine Storefront",
         handle: "@cogentapay",
         settled_vault: "moove://vault/cogentalabs/usdc",
       },
       settlement: {
-        amount_settled: amount_paid_usdc || "3.85",
+        amount_settled: isCompleted ? (amount_paid_usdc || "3.85") : "0.00",
+        amount_due_usdc: amount_paid_usdc || "3.85",
         currency: "USDC",
         source_chain,
         moove_solver_rail: "moove_liquidity_v1",
         receive_agent_endpoint: "GET $MOOVE_API_BASE_URL/v1/payment-link/{id}",
         slippage_bps: 0,
         latency_ms: latencyMs,
-        block_number: blockNumber,
+        block_number: isCompleted ? blockNumber : null,
         tx_hash: txHash,
         verified_at: new Date().toISOString(),
       },
@@ -55,15 +60,18 @@ export async function POST(req: NextRequest) {
         zero_human_clicks: true,
       },
       fulfillment: {
-        status: "ready_for_dispatch",
-        release_token: `tok_live_${Math.random().toString(36).substring(2, 12)}`,
+        status: isCompleted ? "ready_for_dispatch" : "pending_buyer_transfer",
+        release_token: isCompleted ? `tok_live_${Math.random().toString(36).substring(2, 12)}` : null,
+        instructions: isCompleted
+          ? "Payment settled on Moove. API token released."
+          : "Payment link is active on Moove. Open link to complete transfer from any supported chain.",
       },
     }
 
     return NextResponse.json(receipt, {
       status: 200,
       headers: {
-        "X-Payment-Status": "settled",
+        "X-Payment-Status": isCompleted ? "settled" : "awaiting_payment",
         "X-Receipt-Hash": txHash,
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Methods": "POST, OPTIONS",

@@ -59,14 +59,16 @@ const CHAINS = [
 function getChainExplorerUrl(chain: string, txHash: string): string {
   const cleanChain = (chain || "").toLowerCase()
   const cleanTx = (txHash || "").trim()
-  if (cleanChain.includes("solana")) {
+  if (cleanChain.includes("solana") || cleanChain.includes("sol")) {
     return `https://solscan.io/tx/${cleanTx}`
-  } else if (cleanChain.includes("ethereum") || cleanChain.includes("mainnet")) {
-    return `https://etherscan.io/tx/${cleanTx}`
-  } else if (cleanChain.includes("polygon")) {
-    return `https://polygonscan.com/tx/${cleanTx}`
-  } else if (cleanChain.includes("arbitrum")) {
+  } else if (cleanChain.includes("arbitrum") || cleanChain.includes("arb")) {
     return `https://arbiscan.io/tx/${cleanTx}`
+  } else if (cleanChain.includes("optimism") || cleanChain.includes("opt")) {
+    return `https://optimistic.etherscan.io/tx/${cleanTx}`
+  } else if (cleanChain.includes("polygon") || cleanChain.includes("matic")) {
+    return `https://polygonscan.com/tx/${cleanTx}`
+  } else if (cleanChain.includes("ethereum") || cleanChain.includes("mainnet") || cleanChain.includes("eth")) {
+    return `https://etherscan.io/tx/${cleanTx}`
   } else {
     // Default to BaseScan (Base chain is primary Moove settlement)
     return `https://basescan.org/tx/${cleanTx}`
@@ -82,7 +84,7 @@ interface LogEntry {
   linkText?: string
 }
 
-interface LedgerEntry {
+export interface LedgerEntry {
   orderId: string
   buyerAgent: string
   itemTitle: string
@@ -92,51 +94,113 @@ interface LedgerEntry {
   rawTxHash: string
   mooveLinkId?: string
   moovePaymentLink?: string
-  timestamp: string
-  status: "SETTLED"
+  createdAt: number // Epoch timestamp in ms
+  expiresAt: number // Epoch timestamp in ms (e.g. 15 min payment window)
+  settledAt?: number
+  latencyMs?: number
+  status: "SETTLED" | "AWAITING_PAYMENT" | "EXPIRED"
 }
 
-const DEFAULT_LEDGER: LedgerEntry[] = [
-  {
-    orderId: "ord_a7f9_x102",
-    buyerAgent: "agent_elizaos_402",
-    itemTitle: "On-Demand H100 GPU Cluster (1 Hour)",
-    sourceChain: "base",
-    amountUsdc: "3.85",
-    mooveProof: "0x8fa1b49e2a384b...71c2",
-    rawTxHash: "0x8fa1b49e2a384b6c92d04a91c849e20a4b8921cf02934812398471c2",
-    mooveLinkId: "9f11a035-414d-4f0b-9458-bda3d00f5576",
-    moovePaymentLink: "https://moove.xyz/@cogentapay/pay/9f11a035-414d-4f0b-9458-bda3d00f5576",
-    timestamp: "4 mins ago",
-    status: "SETTLED",
-  },
-  {
-    orderId: "ord_b4e2_m991",
-    buyerAgent: "agent_langchain_sol",
-    itemTitle: "Real-Time Financial Oracle Stream",
-    sourceChain: "solana",
-    amountUsdc: "15.00",
-    mooveProof: "0x39dc44a1e9b27f...0fa8",
-    rawTxHash: "39dc44a1e9b27f61c39029a4c8e71829038472910394857291029384750fa8",
-    mooveLinkId: "a1c0c70e-6951-4270-aef4-94b62e64d0cc",
-    moovePaymentLink: "https://moove.xyz/@cogentapay/pay/a1c0c70e-6951-4270-aef4-94b62e64d0cc",
-    timestamp: "18 mins ago",
-    status: "SETTLED",
-  },
-  {
-    orderId: "ord_c8k3_arb77",
-    buyerAgent: "agent_langgraph_arb",
-    itemTitle: "Autonomous Agent HSM Security Key",
-    sourceChain: "arbitrum",
-    amountUsdc: "89.00",
-    mooveProof: "0x7e22d91a0c4f8b...291a",
-    rawTxHash: "0x7e22d91a0c4f8b19d4e5a6c7b8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7",
-    mooveLinkId: "6d152145-53fc-4d24-b976-fcfc19db8f60",
-    moovePaymentLink: "https://moove.xyz/@cogentapay/pay/6d152145-53fc-4d24-b976-fcfc19db8f60",
-    timestamp: "35 mins ago",
-    status: "SETTLED",
-  },
-]
+// Time formatting utilities
+function formatRelativeTime(timestamp: number, now: number): string {
+  const diffMs = now - timestamp
+  if (diffMs < 0) return "Just now"
+  const diffSec = Math.floor(diffMs / 1000)
+  if (diffSec < 10) return "Just now"
+  if (diffSec < 60) return `${diffSec}s ago`
+  const diffMin = Math.floor(diffSec / 60)
+  if (diffMin < 60) {
+    const remSec = diffSec % 60
+    return remSec > 0 ? `${diffMin}m ${remSec}s ago` : `${diffMin}m ago`
+  }
+  const diffHr = Math.floor(diffMin / 60)
+  if (diffHr < 24) {
+    const remMin = diffMin % 60
+    return remMin > 0 ? `${diffHr}h ${remMin}m ago` : `${diffHr}h ago`
+  }
+  const diffDay = Math.floor(diffHr / 24)
+  return `${diffDay}d ago`
+}
+
+function formatTTL(expiresAt: number, now: number): { text: string; isExpired: boolean; secondsLeft: number } {
+  const diffSec = Math.floor((expiresAt - now) / 1000)
+  if (diffSec <= 0) {
+    return { text: "Window Expired", isExpired: true, secondsLeft: 0 }
+  }
+  const min = Math.floor(diffSec / 60)
+  const sec = diffSec % 60
+  return {
+    text: `${min}m ${sec.toString().padStart(2, "0")}s left`,
+    isExpired: false,
+    secondsLeft: diffSec,
+  }
+}
+
+function formatExactTimestamp(timestamp: number): string {
+  return new Date(timestamp).toLocaleTimeString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  })
+}
+
+function formatFullDate(timestamp: number): string {
+  return new Date(timestamp).toLocaleString("en-US", {
+    dateStyle: "medium",
+    timeStyle: "medium",
+  })
+}
+
+function getDefaultLedger(): LedgerEntry[] {
+  const now = Date.now()
+  return [
+    {
+      orderId: "ord_a7f9_x102",
+      buyerAgent: "agent_elizaos_402",
+      itemTitle: "On-Demand H100 GPU Cluster (1 Hour)",
+      sourceChain: "base",
+      amountUsdc: "3.85",
+      mooveProof: "0x8fa1b49e2a384b...71c2",
+      rawTxHash: "0x8fa1b49e2a384b6c92d04a91c849e20a4b8921cf02934812398471c2",
+      mooveLinkId: "9f11a035-414d-4f0b-9458-bda3d00f5576",
+      moovePaymentLink: "https://moove.xyz/@cogentapay/pay/9f11a035-414d-4f0b-9458-bda3d00f5576",
+      createdAt: now - 4 * 60 * 1000,
+      expiresAt: now + 11 * 60 * 1000,
+      status: "AWAITING_PAYMENT",
+    },
+    {
+      orderId: "ord_b4e2_m991",
+      buyerAgent: "agent_langchain_sol",
+      itemTitle: "Real-Time Financial Oracle Stream",
+      sourceChain: "solana",
+      amountUsdc: "15.00",
+      mooveProof: "0x39dc44a1e9b27f...0fa8",
+      rawTxHash: "39dc44a1e9b27f61c39029a4c8e71829038472910394857291029384750fa8",
+      mooveLinkId: "a1c0c70e-6951-4270-aef4-94b62e64d0cc",
+      moovePaymentLink: "https://moove.xyz/@cogentapay/pay/a1c0c70e-6951-4270-aef4-94b62e64d0cc",
+      createdAt: now - 18 * 60 * 1000,
+      expiresAt: now - 3 * 60 * 1000,
+      settledAt: now - 18 * 60 * 1000 + 420,
+      latencyMs: 420,
+      status: "SETTLED",
+    },
+    {
+      orderId: "ord_c8k3_arb77",
+      buyerAgent: "agent_langgraph_arb",
+      itemTitle: "Autonomous Agent HSM Security Key",
+      sourceChain: "arbitrum",
+      amountUsdc: "89.00",
+      mooveProof: "0x7e22d91a0c4f8b...291a",
+      rawTxHash: "0x7e22d91a0c4f8b19d4e5a6c7b8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7",
+      mooveLinkId: "6d152145-53fc-4d24-b976-fcfc19db8f60",
+      moovePaymentLink: "https://moove.xyz/@cogentapay/pay/6d152145-53fc-4d24-b976-fcfc19db8f60",
+      createdAt: now - 2 * 60 * 1000,
+      expiresAt: now + 13 * 60 * 1000,
+      status: "AWAITING_PAYMENT",
+    },
+  ]
+}
 
 export default function DemoPage() {
   const [selectedProduct, setSelectedProduct] = useState<Product>(PRODUCTS[0])
@@ -149,20 +213,62 @@ export default function DemoPage() {
   const [latest402, setLatest402] = useState<any>(null)
   const [latestReceipt, setLatestReceipt] = useState<any>(null)
   const [stepState, setStepState] = useState<number>(0) // 0: Idle, 1: Catalog, 2: 402 Quote, 3: Mandate Check, 4: Moove Settle, 5: Done
-  const [ledger, setLedger] = useState<LedgerEntry[]>(DEFAULT_LEDGER)
+  const [ledger, setLedger] = useState<LedgerEntry[]>(getDefaultLedger)
+  const [currentTime, setCurrentTime] = useState<number>(Date.now())
   const [copiedCurl, setCopiedCurl] = useState(false)
+  const [checkingOrderId, setCheckingOrderId] = useState<string | null>(null)
+  const [isRefreshingAll, setIsRefreshingAll] = useState(false)
 
+  // 1-second live interval ticker for realtime elapsed time & remaining window updates
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(Date.now())
+    }, 1000)
+    return () => clearInterval(timer)
+  }, [])
+
+  // Load and migrate ledger from localStorage
   useEffect(() => {
     try {
-      const saved = localStorage.getItem("cogentapay_ledger_v1")
+      const saved = localStorage.getItem("cogentapay_ledger_v2") || localStorage.getItem("cogentapay_ledger_v1")
       if (saved) {
         const parsed = JSON.parse(saved)
         if (Array.isArray(parsed) && parsed.length > 0) {
-          setLedger(parsed)
+          const now = Date.now()
+          const migrated: LedgerEntry[] = parsed.map((item: any, idx: number) => {
+            let createdAt = typeof item.createdAt === "number" ? item.createdAt : null
+            if (!createdAt) {
+              if (item.timestamp?.includes("Just now") || item.timestamp?.includes("0 min")) createdAt = now - 15 * 1000
+              else if (item.timestamp?.includes("4 min")) createdAt = now - 4 * 60 * 1000
+              else if (item.timestamp?.includes("18 min")) createdAt = now - 18 * 60 * 1000
+              else if (item.timestamp?.includes("35 min")) createdAt = now - 35 * 60 * 1000
+              else createdAt = now - (idx + 1) * 6 * 60 * 1000
+            }
+            const expiresAt = typeof item.expiresAt === "number" ? item.expiresAt : (createdAt + 15 * 60 * 1000)
+            return {
+              orderId: item.orderId || `ord_legacy_${idx}`,
+              buyerAgent: item.buyerAgent || "agent_elizaos_402",
+              itemTitle: item.itemTitle || "On-Demand Compute Cluster",
+              sourceChain: item.sourceChain || "base",
+              amountUsdc: item.amountUsdc || "3.85",
+              mooveProof: item.mooveProof || "0x8fa1b49e...71c2",
+              rawTxHash: item.rawTxHash || "0x8fa1b49e2a384b6c92d04a91c849e20a4b8921cf02934812398471c2",
+              mooveLinkId: item.mooveLinkId,
+              moovePaymentLink: item.moovePaymentLink,
+              createdAt,
+              expiresAt,
+              settledAt: item.settledAt,
+              latencyMs: item.latencyMs,
+              status: item.status || "SETTLED",
+            }
+          })
+          setLedger(migrated)
+          return
         }
       }
+      setLedger(getDefaultLedger())
     } catch {
-      // fallback to DEFAULT_LEDGER
+      setLedger(getDefaultLedger())
     }
   }, [])
 
@@ -177,6 +283,80 @@ export default function DemoPage() {
   ) => {
     const timestamp = new Date().toLocaleTimeString("en-US", { hour12: false })
     setLogs((prev) => [...prev, { timestamp, type, message, payload, linkUrl, linkText }])
+  }
+
+  const checkLedgerItemStatus = async (item: LedgerEntry) => {
+    if (!item.mooveLinkId && !item.orderId) return
+    setCheckingOrderId(item.orderId)
+    try {
+      const res = await fetch("/api/verify-settlement", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          order_id: item.orderId,
+          amount_paid_usdc: item.amountUsdc,
+          source_chain: item.sourceChain,
+          moove_link_id: item.mooveLinkId,
+        }),
+      })
+      const data = await res.json()
+      if (data.status === "settled") {
+        setLedger((prev) => {
+          const updated = prev.map((entry) =>
+            entry.orderId === item.orderId
+              ? {
+                ...entry,
+                status: "SETTLED" as const,
+                settledAt: Date.now(),
+                rawTxHash: data.settlement?.tx_hash || entry.rawTxHash,
+                mooveProof: data.settlement?.tx_hash
+                  ? data.settlement.tx_hash.slice(0, 14) + "..." + data.settlement.tx_hash.slice(-4)
+                  : entry.mooveProof,
+                latencyMs: data.settlement?.latency_ms || 450,
+              }
+              : entry
+          )
+          try {
+            localStorage.setItem("cogentapay_ledger_v2", JSON.stringify(updated.slice(0, 50)))
+          } catch { }
+          return updated
+        })
+        addLog("success", `[Live Settlement Verified] Order ${item.orderId} confirmed settled on Moove!`)
+      } else {
+        addLog("info", `[Moove Poll] Order ${item.orderId} status: ${data.moove_live_status || "awaiting_payment"}`)
+      }
+    } catch (err: any) {
+      addLog("warn", `Status check failed for ${item.orderId}: ${err.message}`)
+    } finally {
+      setCheckingOrderId(null)
+    }
+  }
+
+  const refreshAllPending = async () => {
+    setIsRefreshingAll(true)
+    const pendingItems = ledger.filter((item) => item.status === "AWAITING_PAYMENT" && item.mooveLinkId)
+    for (const item of pendingItems) {
+      await checkLedgerItemStatus(item)
+    }
+    setIsRefreshingAll(false)
+  }
+
+  const resetLedgerToDefaults = () => {
+    const defaults = getDefaultLedger()
+    setLedger(defaults)
+    try {
+      localStorage.setItem("cogentapay_ledger_v2", JSON.stringify(defaults))
+    } catch { }
+    addLog("info", "[Ledger Reset] Restored demo ledger records with fresh active timestamps.")
+  }
+
+  const clearLedgerHistory = () => {
+    setLedger([])
+    try {
+      localStorage.removeItem("cogentapay_ledger_v2")
+      localStorage.removeItem("cogentapay_ledger_v1")
+    } catch { }
+    addLog("info", "[Ledger Cleared] All local settlement records cleared.")
   }
 
   const runSimulation = async (forcedSpendLimit?: number) => {
@@ -273,24 +453,37 @@ export default function DemoPage() {
       const verifyData = await verifyRes.json()
       setLatestReceipt(verifyData)
 
-      await new Promise((r) => setTimeout(r, 600))
+      const isSettled = verifyData.status === "settled"
       setStepState(5)
-      addLog("success", `< HTTP/1.1 200 OK | Settlement Confirmed on Moove! Latency: ${verifyData.settlement.latency_ms}ms`)
-      if (verifyData.moove_verified_live) {
-        addLog("success", `[Moove Live] Verified on-chain through live Moove Receive Agent endpoint!`)
+
+      if (isSettled) {
+        addLog("success", `< HTTP/1.1 200 OK | Settlement Confirmed on Moove! Latency: ${verifyData.settlement.latency_ms}ms`)
+        if (verifyData.moove_verified_live) {
+          addLog("success", `[Moove Live] Verified on-chain through live Moove Receive Agent endpoint!`)
+        }
+        addLog("success", `[Fulfillment] Order finalized for @cogentapay. Token: ${verifyData.fulfillment.release_token}`)
+      } else {
+        addLog("warn", `< HTTP/1.1 200 OK | Status: AWAITING_PAYMENT (Active Pay Window Created on Moove)`)
+        addLog(
+          "info",
+          `[Moove Receive Agent] Pay window active: Open link to transfer from ${selectedChain.toUpperCase()}...`,
+          undefined,
+          checkoutData.moove_rail.payment_link,
+          "Open Pay Window ↗"
+        )
       }
 
-      const explorerLink = getChainExplorerUrl(selectedChain, verifyData.settlement.tx_hash)
       addLog(
         "code",
-        `[Receipt Hash] ${verifyData.settlement.tx_hash}`,
+        `[Invoice Hash] ${verifyData.settlement.tx_hash}`,
         undefined,
-        explorerLink,
-        `View on ${selectedChain.toUpperCase()} Explorer ↗`
+        checkoutData.moove_rail.payment_link,
+        `Inspect Live Moove Invoice ↗`
       )
-      addLog("success", `[Fulfillment] Order finalized for @cogentapay. Token: ${verifyData.fulfillment.release_token}`)
 
-      // Update Merchant Ledger & Persist to localStorage
+      // Record exact creation time & expiration timestamp
+      const now = Date.now()
+      const expiresAt = checkoutData.expires_at ? checkoutData.expires_at * 1000 : now + 15 * 60 * 1000
       const newLedgerItem: LedgerEntry = {
         orderId: checkoutData.order_id,
         buyerAgent: "agent_elizaos_402",
@@ -301,15 +494,18 @@ export default function DemoPage() {
         rawTxHash: verifyData.settlement.tx_hash,
         mooveLinkId: checkoutData.moove_rail?.payment_link_id,
         moovePaymentLink: checkoutData.moove_rail?.payment_link,
-        timestamp: "Just now",
-        status: "SETTLED",
+        createdAt: now,
+        expiresAt: expiresAt,
+        settledAt: isSettled ? now : undefined,
+        latencyMs: verifyData.settlement?.latency_ms || 450,
+        status: isSettled ? "SETTLED" : "AWAITING_PAYMENT",
       }
 
       setLedger((prev) => {
         const updated = [newLedgerItem, ...prev]
         try {
-          localStorage.setItem("cogentapay_ledger_v1", JSON.stringify(updated.slice(0, 50)))
-        } catch {}
+          localStorage.setItem("cogentapay_ledger_v2", JSON.stringify(updated.slice(0, 50)))
+        } catch { }
         return updated
       })
     } catch (err: any) {
@@ -471,7 +667,7 @@ export default function DemoPage() {
                     <span>Agent Source Chain (Moove Inbound)</span>
                     <span className="text-[#847E79] font-normal">37+ chains supported</span>
                   </label>
-                  <div className="grid grid-cols-3 sm:grid-cols-5 gap-1.5">
+                  <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
                     {CHAINS.map((chain) => (
                       <button
                         key={chain.id}
@@ -775,7 +971,7 @@ export default function DemoPage() {
                         <span className="text-[10px] text-zinc-500">Create one-off hosted link</span>
                       </div>
                       <pre className="text-cyan-300 bg-zinc-900/90 p-3 rounded-lg border border-zinc-800 text-[11px] overflow-x-auto whitespace-pre-wrap">
-{`curl -sS -X POST "https://api.moove.xyz/v1/payment-link" \\
+                        {`curl -sS -X POST "https://api.moove.xyz/v1/payment-link" \\
   -H "X-API-Key: $MOOVE_API_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{
@@ -793,7 +989,7 @@ export default function DemoPage() {
                         <span className="text-[10px] text-zinc-500">Poll payment settlement</span>
                       </div>
                       <pre className="text-emerald-300 bg-zinc-900/90 p-3 rounded-lg border border-zinc-800 text-[11px] overflow-x-auto whitespace-pre-wrap">
-{`curl -sS "https://api.moove.xyz/v1/payment-link/${latest402?.moove_rail?.payment_link_id || '$LINK_ID'}" \\
+                        {`curl -sS "https://api.moove.xyz/v1/payment-link/${latest402?.moove_rail?.payment_link_id || '$LINK_ID'}" \\
   -H "X-API-Key: $MOOVE_API_KEY"`}
                       </pre>
                     </div>
@@ -829,7 +1025,7 @@ export default function DemoPage() {
                     <div className="flex flex-col gap-2 pt-2 border-t border-zinc-800">
                       <span className="text-[11px] text-zinc-400">Step 2 Settlement Verification Command:</span>
                       <pre className="text-emerald-300 bg-zinc-900/90 p-3 rounded-lg border border-zinc-800 text-[11px] overflow-x-auto whitespace-pre-wrap">
-{`curl -i -X POST https://pay.cogentalabs.com/api/verify-settlement \\
+                        {`curl -i -X POST https://pay.cogentalabs.com/api/verify-settlement \\
   -H "Content-Type: application/json" \\
   -d '{"order_id":"ord_demo_test","amount_paid_usdc":"${totalCost}","source_chain":"${selectedChain}","agent_signature":"0x706179"}'`}
                       </pre>
@@ -854,72 +1050,166 @@ export default function DemoPage() {
         </div>
 
         {/* Real-time Merchant Settlement Ledger Section */}
-        <div className="w-full bg-white border border-[#E0DEDB] rounded-2xl p-6 sm:p-8 shadow-xs flex flex-col gap-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#F0EEEB] pb-4">
-            <div className="flex items-center gap-2.5">
-              <div className="w-2.5 h-2.5 rounded-full bg-emerald-500"></div>
-              <h2 className="text-base sm:text-lg font-bold font-sans text-[#37322F]">
-                Merchant Settlement Ledger (@cogentapay USDC Vault)
-              </h2>
+        <div className="w-full bg-white border border-[#E0DEDB] rounded-2xl p-6 sm:p-8 shadow-xs flex flex-col gap-5">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-[#F0EEEB] pb-4">
+            <div className="flex flex-col gap-1">
+              <div className="flex items-center gap-2.5">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                <h2 className="text-base sm:text-lg font-bold font-sans text-[#37322F]">
+                  Merchant Settlement Ledger (@cogentapay USDC Vault)
+                </h2>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-emerald-100 text-emerald-800 border border-emerald-300">
+                  Live Stream
+                </span>
+              </div>
+              <p className="text-xs text-[#847E79] font-sans">
+                Real-time inbound cross-chain payment streaming into merchant Moove vault. All timestamps dynamic and verifiable on-chain.
+              </p>
             </div>
-            <span className="text-xs text-[#847E79] font-mono">
-              Live Inbound Stream • Moove Cross-Chain Rails
-            </span>
+
+            {/* Metrics & Control Actions */}
+            <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+              <div className="flex items-center gap-2 bg-[#FAF9F7] border border-[#E0DEDB] px-3 py-1.5 rounded-xl text-xs font-mono">
+                <span className="text-emerald-700 font-bold">
+                  {ledger.filter((l) => l.status === "SETTLED").length} Settled
+                </span>
+                <span className="text-[#D5D2CC]">|</span>
+                <span className="text-amber-700 font-bold">
+                  {ledger.filter((l) => l.status === "AWAITING_PAYMENT").length} Awaiting
+                </span>
+              </div>
+
+              <button
+                onClick={refreshAllPending}
+                disabled={isRefreshingAll || !ledger.some((l) => l.status === "AWAITING_PAYMENT")}
+                title="Poll Moove API to verify active payment links"
+                className="px-3 py-1.5 rounded-lg bg-white hover:bg-[#F5F3EF] border border-[#E0DEDB] text-[#37322F] text-xs font-mono font-medium flex items-center gap-1.5 transition-colors disabled:opacity-40 disabled:cursor-not-allowed shadow-2xs"
+              >
+                <span className={isRefreshingAll ? "animate-spin" : ""}>↻</span>
+                <span>{isRefreshingAll ? "Polling Moove..." : "Poll Status"}</span>
+              </button>
+
+              {/* <button
+                onClick={resetLedgerToDefaults}
+                title="Reset ledger to initial live simulation records"
+                className="px-2.5 py-1.5 rounded-lg bg-[#FAF9F7] hover:bg-[#F2EFEB] border border-[#E0DEDB] text-[#605A57] text-xs font-sans transition-colors"
+              >
+                Reset
+              </button>
+
+              <button
+                onClick={clearLedgerHistory}
+                title="Clear local transaction history"
+                className="px-2.5 py-1.5 rounded-lg bg-[#FAF9F7] hover:bg-rose-50 hover:text-rose-700 hover:border-rose-200 border border-[#E0DEDB] text-[#847E79] text-xs font-sans transition-colors"
+              >
+                Clear
+              </button> */}
+            </div>
           </div>
 
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs font-sans">
               <thead>
                 <tr className="border-b border-[#F0EEEB] text-[#847E79] font-mono text-[11px]">
-                  <th className="py-2.5 px-3 font-semibold">Time</th>
+                  <th className="py-2.5 px-3 font-semibold">Time & Elapsed</th>
                   <th className="py-2.5 px-3 font-semibold">Order ID</th>
                   <th className="py-2.5 px-3 font-semibold">Buyer Agent</th>
                   <th className="py-2.5 px-3 font-semibold">Item Purchased</th>
                   <th className="py-2.5 px-3 font-semibold">Inbound Chain</th>
                   <th className="py-2.5 px-3 font-semibold">Net Settled</th>
                   <th className="py-2.5 px-3 font-semibold">Moove Tx Proof</th>
-                  <th className="py-2.5 px-3 font-semibold">Status</th>
+                  <th className="py-2.5 px-3 font-semibold">Status & Pay Window</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#F6F4F1] font-mono text-[11px]">
                 {ledger.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="py-10 text-center text-zinc-500 font-sans">
-                      <div className="flex flex-col items-center justify-center gap-1.5">
-                        <span className="text-zinc-700 font-medium text-xs">No live settlements in this session yet</span>
-                        <span className="text-[11px] text-zinc-400 max-w-[400px]">
-                          Click &quot;Run Autonomous Agent Checkout&quot; above to execute the 4-step Moove payment loop and stream inbound transactions here.
+                    <td colSpan={8} className="py-12 text-center text-zinc-500 font-sans">
+                      <div className="flex flex-col items-center justify-center gap-2">
+                        <div className="w-10 h-10 rounded-full bg-[#F5F3EF] flex items-center justify-center text-zinc-500 font-mono text-sm">
+                          ∅
+                        </div>
+                        <span className="text-zinc-800 font-semibold text-sm">No settlements in ledger</span>
+                        <span className="text-xs text-zinc-500 max-w-[420px] text-center">
+                          Click &quot;Run Autonomous Agent Checkout&quot; above to execute the 4-step Moove payment cycle or click &quot;Reset&quot; to restore sample live entries.
                         </span>
+                        <button
+                          onClick={resetLedgerToDefaults}
+                          className="mt-2 px-3 py-1.5 rounded-lg bg-[#37322F] text-white text-xs font-sans font-medium hover:bg-black transition-colors"
+                        >
+                          Load Demo Entries
+                        </button>
                       </div>
                     </td>
                   </tr>
                 ) : (
                   ledger.map((item, i) => {
                     const explorerUrl = getChainExplorerUrl(item.sourceChain, item.rawTxHash)
-                    const mooveUrl = item.moovePaymentLink || (item.mooveLinkId ? `https://moove.xyz/@cogentapay/pay/${item.mooveLinkId}` : null)
+                    const mooveUrl =
+                      item.moovePaymentLink ||
+                      (item.mooveLinkId ? `https://moove.xyz/@cogentapay/pay/${item.mooveLinkId}` : null)
+                    const isRecent = currentTime - item.createdAt < 20000
+                    const ttl = formatTTL(item.expiresAt, currentTime)
+                    const isAwaiting = item.status === "AWAITING_PAYMENT"
+
                     return (
-                      <tr key={i} className="hover:bg-[#FAF9F7] transition-colors group">
-                        <td className="py-3 px-3 text-[#847E79]">{item.timestamp}</td>
-                        <td className="py-3 px-3 font-bold text-[#37322F]">{item.orderId}</td>
-                        <td className="py-3 px-3 text-[#605A57]">{item.buyerAgent}</td>
-                        <td className="py-3 px-3 font-sans text-[#37322F] font-medium max-w-[200px] truncate">
+                      <tr key={item.orderId || i} className="hover:bg-[#FAF9F7] transition-colors group">
+                        {/* Time & Elapsed */}
+                        <td className="py-3 px-3">
+                          <div className="flex flex-col gap-0.5" title={`Created: ${formatFullDate(item.createdAt)}`}>
+                            <div className="flex items-center gap-1.5">
+                              {isRecent && (
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping inline-block"></span>
+                              )}
+                              <span className="text-[#37322F] font-semibold">
+                                {formatRelativeTime(item.createdAt, currentTime)}
+                              </span>
+                            </div>
+                            <span className="text-[10px] text-[#847E79] font-mono">
+                              {formatExactTimestamp(item.createdAt)}
+                            </span>
+                          </div>
+                        </td>
+
+                        {/* Order ID */}
+                        <td className="py-3 px-3 font-bold text-[#37322F]">
+                          <span className="font-mono">{item.orderId}</span>
+                        </td>
+
+                        {/* Buyer Agent */}
+                        <td className="py-3 px-3 text-[#605A57]">
+                          <span className="px-2 py-0.5 rounded bg-[#F2F0ED] text-[#37322F] text-[10px] font-mono">
+                            {item.buyerAgent}
+                          </span>
+                        </td>
+
+                        {/* Item */}
+                        <td className="py-3 px-3 font-sans text-[#37322F] font-medium max-w-[190px] truncate" title={item.itemTitle}>
                           {item.itemTitle}
                         </td>
+
+                        {/* Inbound Chain */}
                         <td className="py-3 px-3">
                           <span className="uppercase px-2 py-0.5 rounded bg-[#F2F0ED] text-[#37322F] text-[10px] font-semibold">
                             {item.sourceChain}
                           </span>
                         </td>
-                        <td className="py-3 px-3 font-bold text-emerald-700">${item.amountUsdc} USDC</td>
+
+                        {/* Net Settled */}
+                        <td className="py-3 px-3 font-bold text-emerald-700">
+                          ${item.amountUsdc} USDC
+                        </td>
+
+                        {/* Moove Tx Proof */}
                         <td className="py-3 px-3">
-                          <div className="flex items-center gap-2 flex-wrap">
+                          <div className="flex items-center gap-1.5 flex-wrap">
                             {mooveUrl ? (
                               <a
                                 href={mooveUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                title="Open Live Moove.xyz Hosted Payment Invoice"
-                                className="px-2 py-0.5 rounded bg-emerald-100 hover:bg-emerald-200 text-emerald-900 font-bold text-[10px] border border-emerald-300 transition-all inline-flex items-center gap-1 shadow-xs"
+                                title="Open Live Moove Hosted Payment Invoice"
+                                className="px-2 py-0.5 rounded bg-emerald-100 hover:bg-emerald-200 text-emerald-900 font-bold text-[10px] border border-emerald-300 transition-all inline-flex items-center gap-1 shadow-2xs"
                               >
                                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse"></span>
                                 <span>Moove Live Link</span>
@@ -930,17 +1220,63 @@ export default function DemoPage() {
                               href={mooveUrl || explorerUrl}
                               target="_blank"
                               rel="noopener noreferrer"
-                              title={`Proof: ${item.rawTxHash}`}
+                              title={`Proof: ${item.rawTxHash} (Click to inspect explorer)`}
                               className="text-zinc-600 hover:text-zinc-900 font-mono text-[10px] underline inline-flex items-center gap-0.5"
                             >
                               <span>{item.mooveProof}</span>
                             </a>
                           </div>
                         </td>
+
+                        {/* Status & Pay Window */}
                         <td className="py-3 px-3">
-                          <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">
-                            {item.status}
-                          </span>
+                          {item.status === "SETTLED" ? (
+                            <div className="flex flex-col gap-0.5">
+                              <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 text-[10px] font-bold whitespace-nowrap inline-flex items-center gap-1 w-fit">
+                                <span>✓</span> SETTLED
+                              </span>
+                              <span className="text-[9px] text-[#847E79] font-mono pl-1">
+                                {item.latencyMs ? `${item.latencyMs}ms latency` : "Instant"}
+                              </span>
+                            </div>
+                          ) : isAwaiting ? (
+                            <div className="flex flex-col gap-1">
+                              <div className="flex items-center gap-1.5">
+                                {ttl.isExpired ? (
+                                  <span className="px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-700 border border-zinc-300 text-[10px] font-bold whitespace-nowrap inline-flex items-center gap-1">
+                                    EXPIRED
+                                  </span>
+                                ) : (
+                                  <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-300 text-[10px] font-bold inline-flex items-center gap-1 shadow-2xs whitespace-nowrap">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-ping"></span>
+                                    AWAITING PAYMENT
+                                  </span>
+                                )}
+
+                                {item.mooveLinkId && (
+                                  <button
+                                    onClick={() => checkLedgerItemStatus(item)}
+                                    disabled={checkingOrderId === item.orderId}
+                                    title="Check live payment status directly from Moove API"
+                                    className="px-1.5 py-0.5 rounded bg-[#F2F0ED] hover:bg-[#E5E2DC] text-[#37322F] border border-[#D5D2CC] text-[9px] font-mono font-medium inline-flex items-center gap-0.5 transition-colors disabled:opacity-50 cursor-pointer"
+                                  >
+                                    <span className={checkingOrderId === item.orderId ? "animate-spin" : ""}>↻</span>
+                                    <span>Check</span>
+                                  </button>
+                                )}
+                              </div>
+                              <span
+                                className={`text-[9px] font-mono pl-1 ${ttl.isExpired ? "text-zinc-500" : "text-amber-800 font-semibold"
+                                  }`}
+                              >
+                                ⏱ {ttl.text}
+                              </span>
+                            </div>
+                          ) : (
+                            <span className="px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-700 border border-zinc-300 text-[10px] font-bold whitespace-nowrap">
+                              EXPIRED
+                            </span>
+                          )}
                         </td>
                       </tr>
                     )
