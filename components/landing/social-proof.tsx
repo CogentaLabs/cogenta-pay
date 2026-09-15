@@ -56,8 +56,15 @@ function ACPBadge() {
 
 function ErcBadge() {
   return (
-    <div className="w-8 h-8 rounded-lg bg-[#EEF2FF] border border-[#C7D2FE] flex items-center justify-center text-[#4F46E5] font-mono font-bold text-xs shadow-xs">
-      4337
+    <div className="w-8 h-8 rounded-lg bg-[#627EEA] flex items-center justify-center shadow-xs p-1">
+      <svg viewBox="0 0 32 32" className="w-5 h-5">
+        <path d="M16 4L15.86 4.46V20.27L16 20.41L23.41 16.03L16 4Z" fill="#C0CBF6" />
+        <path d="M16 4L8.59 16.03L16 20.41V4Z" fill="white" />
+        <path d="M16 21.69L15.91 21.8V27.76L16 28.02L23.42 17.31L16 21.69Z" fill="#C0CBF6" />
+        <path d="M16 28.02V21.69L8.59 17.31L16 28.02Z" fill="white" />
+        <path d="M16 20.41L23.41 16.03L16 12.66V20.41Z" fill="#8197EE" />
+        <path d="M8.59 16.03L16 20.41V12.66L8.59 16.03Z" fill="#C0CBF6" />
+      </svg>
     </div>
   )
 }

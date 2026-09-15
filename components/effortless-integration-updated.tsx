@@ -138,21 +138,22 @@ const EffortlessIntegration: React.FC<EffortlessIntegrationProps> = ({ width = 4
             left: `${getPositionOnRing(80, Math.PI).x - 16}px`,
             top: `${getPositionOnRing(80, Math.PI).y - 16}px`,
             position: "absolute",
-            background: "#3C3C3D",
+            background: "#627EEA",
             boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.15)",
             borderRadius: "50%",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
+            overflow: "hidden",
           }}
         >
           <img
-            src="https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/ethereum.svg"
+            src="/icons/ethereum.svg"
             alt="Ethereum"
             style={{
-              width: "18px",
-              height: "18px",
-              filter: "brightness(0) invert(1)",
+              width: "100%",
+              height: "100%",
+              objectFit: "contain",
             }}
           />
         </div>
@@ -171,15 +172,16 @@ const EffortlessIntegration: React.FC<EffortlessIntegrationProps> = ({ width = 4
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
+            overflow: "hidden",
           }}
         >
           <img
-            src="https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/solana.svg"
+            src="/icons/solana.svg"
             alt="Solana"
             style={{
-              width: "18px",
-              height: "18px",
-              filter: "brightness(0) invert(1)",
+              width: "100%",
+              height: "100%",
+              objectFit: "contain",
             }}
           />
         </div>
@@ -192,21 +194,22 @@ const EffortlessIntegration: React.FC<EffortlessIntegrationProps> = ({ width = 4
             left: `${getPositionOnRing(120, -Math.PI / 4).x - 16}px`,
             top: `${getPositionOnRing(120, -Math.PI / 4).y - 16}px`,
             position: "absolute",
-            background: "#8247E5",
+            background: "#7B3FE4",
             boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.15)",
             borderRadius: "50%",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
+            overflow: "hidden",
           }}
         >
           <img
-            src="https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/polygon.svg"
+            src="/icons/polygon.svg"
             alt="Polygon"
             style={{
-              width: "18px",
-              height: "18px",
-              filter: "brightness(0) invert(1)",
+              width: "100%",
+              height: "100%",
+              objectFit: "contain",
             }}
           />
         </div>
@@ -225,20 +228,21 @@ const EffortlessIntegration: React.FC<EffortlessIntegrationProps> = ({ width = 4
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
+            overflow: "hidden",
           }}
         >
           <img
-            src="https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/arbitrum.svg"
+            src="/icons/arbitrum.svg"
             alt="Arbitrum"
             style={{
-              width: "18px",
-              height: "18px",
-              filter: "brightness(0) invert(1)",
+              width: "100%",
+              height: "100%",
+              objectFit: "contain",
             }}
           />
         </div>
 
-        {/* Base / Coinbase - 225° (bottom-left diagonal) */}
+        {/* Base - 225° (bottom-left diagonal) */}
         <div
           style={{
             width: "32px",
@@ -252,20 +256,21 @@ const EffortlessIntegration: React.FC<EffortlessIntegrationProps> = ({ width = 4
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
+            overflow: "hidden",
           }}
         >
           <img
-            src="https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/coinbase.svg"
+            src="/icons/base.svg"
             alt="Base"
             style={{
-              width: "18px",
-              height: "18px",
-              filter: "brightness(0) invert(1)",
+              width: "100%",
+              height: "100%",
+              objectFit: "contain",
             }}
           />
         </div>
 
-        {/* WooCommerce - 180° (outer left) */}
+        {/* Optimism - 180° (outer left) */}
         <div
           style={{
             width: "32px",
@@ -273,21 +278,22 @@ const EffortlessIntegration: React.FC<EffortlessIntegrationProps> = ({ width = 4
             left: `${getPositionOnRing(160, Math.PI).x - 16}px`,
             top: `${getPositionOnRing(160, Math.PI).y - 16}px`,
             position: "absolute",
-            background: "#96588A",
+            background: "#FF0420",
             boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.15)",
             borderRadius: "50%",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
+            overflow: "hidden",
           }}
         >
           <img
-            src="https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/woocommerce.svg"
-            alt="WooCommerce"
+            src="/icons/optimism.svg"
+            alt="Optimism"
             style={{
-              width: "18px",
-              height: "18px",
-              filter: "brightness(0) invert(1)",
+              width: "100%",
+              height: "100%",
+              objectFit: "contain",
             }}
           />
         </div>

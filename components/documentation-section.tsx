@@ -167,17 +167,18 @@ export default function DocumentationSection() {
                   </div>
                   <div className="flex justify-center items-center gap-2 flex-wrap">
                     {[
-                      { name: "Base", icon: "https://cdn.simpleicons.org/coinbase/0052FF" },
-                      { name: "Solana", icon: "https://cdn.simpleicons.org/solana/14F195" },
+                      { name: "Base", icon: "/icons/base.svg" },
+                      { name: "Solana", icon: "/icons/solana.svg" },
+                      { name: "Arbitrum", icon: "/icons/arbitrum.svg" },
+                      { name: "Optimism", icon: "/icons/optimism.svg" },
                       { name: "Ethereum", icon: "https://cdn.simpleicons.org/ethereum/3C3C3D" },
-                      { name: "Arbitrum", icon: "https://cdn.simpleicons.org/arbitrum/28A0F0" },
                       { name: "Polygon", icon: "https://cdn.simpleicons.org/polygon/7B3FE4" },
                     ].map((chain, i) => (
                       <div
                         key={i}
                         className="px-2.5 py-1.5 bg-white border border-[#E0DEDB] rounded-full flex items-center gap-1.5 shadow-xs text-xs font-medium text-[#37322F]"
                       >
-                        <img src={chain.icon} alt={chain.name} className="w-3.5 h-3.5 object-contain" />
+                        <img src={chain.icon} alt={chain.name} className="w-4 h-4 object-contain" />
                         <span>{chain.name}</span>
                       </div>
                     ))}

@@ -48,18 +48,38 @@ const PRODUCTS: Product[] = [
 ]
 
 const CHAINS = [
-  { id: "base", name: "Base", icon: "https://cdn.simpleicons.org/coinbase/0052FF", fee: "~$0.002" },
-  { id: "solana", name: "Solana", icon: "https://cdn.simpleicons.org/solana/14F195", fee: "~$0.001" },
-  { id: "ethereum", name: "Ethereum", icon: "https://cdn.simpleicons.org/ethereum/3C3C3D", fee: "~$0.85" },
-  { id: "arbitrum", name: "Arbitrum", icon: "https://cdn.simpleicons.org/arbitrum/28A0F0", fee: "~$0.01" },
-  { id: "polygon", name: "Polygon", icon: "https://cdn.simpleicons.org/polygon/7B3FE4", fee: "~$0.005" },
+  { id: "base", name: "Base", icon: "/icons/base.svg", fee: "~$0.002" },
+  { id: "solana", name: "Solana", icon: "/icons/solana.svg", fee: "~$0.001" },
+  { id: "arbitrum", name: "Arbitrum", icon: "/icons/arbitrum.svg", fee: "~$0.01" },
+  { id: "optimism", name: "Optimism", icon: "/icons/optimism.svg", fee: "~$0.008" },
+  { id: "ethereum", name: "Ethereum", icon: "/icons/ethereum.svg", fee: "~$0.85" },
+  { id: "polygon", name: "Polygon", icon: "/icons/polygon.svg", fee: "~$0.005" },
 ]
+
+function getChainExplorerUrl(chain: string, txHash: string): string {
+  const cleanChain = (chain || "").toLowerCase()
+  const cleanTx = (txHash || "").trim()
+  if (cleanChain.includes("solana")) {
+    return `https://solscan.io/tx/${cleanTx}`
+  } else if (cleanChain.includes("ethereum") || cleanChain.includes("mainnet")) {
+    return `https://etherscan.io/tx/${cleanTx}`
+  } else if (cleanChain.includes("polygon")) {
+    return `https://polygonscan.com/tx/${cleanTx}`
+  } else if (cleanChain.includes("arbitrum")) {
+    return `https://arbiscan.io/tx/${cleanTx}`
+  } else {
+    // Default to BaseScan (Base chain is primary Moove settlement)
+    return `https://basescan.org/tx/${cleanTx}`
+  }
+}
 
 interface LogEntry {
   timestamp: string
   type: "info" | "warn" | "success" | "error" | "code"
   message: string
   payload?: any
+  linkUrl?: string
+  linkText?: string
 }
 
 interface LedgerEntry {
@@ -69,11 +89,14 @@ interface LedgerEntry {
   sourceChain: string
   amountUsdc: string
   mooveProof: string
+  rawTxHash: string
+  mooveLinkId?: string
+  moovePaymentLink?: string
   timestamp: string
   status: "SETTLED"
 }
 
-const INITIAL_LEDGER: LedgerEntry[] = [
+const DEFAULT_LEDGER: LedgerEntry[] = [
   {
     orderId: "ord_a7f9_x102",
     buyerAgent: "agent_elizaos_402",
@@ -81,7 +104,10 @@ const INITIAL_LEDGER: LedgerEntry[] = [
     sourceChain: "base",
     amountUsdc: "3.85",
     mooveProof: "0x8fa1b49e2a384b...71c2",
-    timestamp: "2 mins ago",
+    rawTxHash: "0x8fa1b49e2a384b6c92d04a91c849e20a4b8921cf02934812398471c2",
+    mooveLinkId: "9f11a035-414d-4f0b-9458-bda3d00f5576",
+    moovePaymentLink: "https://moove.xyz/@cogentapay/pay/9f11a035-414d-4f0b-9458-bda3d00f5576",
+    timestamp: "4 mins ago",
     status: "SETTLED",
   },
   {
@@ -91,7 +117,23 @@ const INITIAL_LEDGER: LedgerEntry[] = [
     sourceChain: "solana",
     amountUsdc: "15.00",
     mooveProof: "0x39dc44a1e9b27f...0fa8",
-    timestamp: "11 mins ago",
+    rawTxHash: "39dc44a1e9b27f61c39029a4c8e71829038472910394857291029384750fa8",
+    mooveLinkId: "a1c0c70e-6951-4270-aef4-94b62e64d0cc",
+    moovePaymentLink: "https://moove.xyz/@cogentapay/pay/a1c0c70e-6951-4270-aef4-94b62e64d0cc",
+    timestamp: "18 mins ago",
+    status: "SETTLED",
+  },
+  {
+    orderId: "ord_c8k3_arb77",
+    buyerAgent: "agent_langgraph_arb",
+    itemTitle: "Autonomous Agent HSM Security Key",
+    sourceChain: "arbitrum",
+    amountUsdc: "89.00",
+    mooveProof: "0x7e22d91a0c4f8b...291a",
+    rawTxHash: "0x7e22d91a0c4f8b19d4e5a6c7b8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7",
+    mooveLinkId: "6d152145-53fc-4d24-b976-fcfc19db8f60",
+    moovePaymentLink: "https://moove.xyz/@cogentapay/pay/6d152145-53fc-4d24-b976-fcfc19db8f60",
+    timestamp: "35 mins ago",
     status: "SETTLED",
   },
 ]
@@ -107,14 +149,34 @@ export default function DemoPage() {
   const [latest402, setLatest402] = useState<any>(null)
   const [latestReceipt, setLatestReceipt] = useState<any>(null)
   const [stepState, setStepState] = useState<number>(0) // 0: Idle, 1: Catalog, 2: 402 Quote, 3: Mandate Check, 4: Moove Settle, 5: Done
-  const [ledger, setLedger] = useState<LedgerEntry[]>(INITIAL_LEDGER)
+  const [ledger, setLedger] = useState<LedgerEntry[]>(DEFAULT_LEDGER)
   const [copiedCurl, setCopiedCurl] = useState(false)
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("cogentapay_ledger_v1")
+      if (saved) {
+        const parsed = JSON.parse(saved)
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setLedger(parsed)
+        }
+      }
+    } catch {
+      // fallback to DEFAULT_LEDGER
+    }
+  }, [])
 
   const totalCost = (selectedProduct.price_usdc * quantity).toFixed(2)
 
-  const addLog = (type: LogEntry["type"], message: string, payload?: any) => {
+  const addLog = (
+    type: LogEntry["type"],
+    message: string,
+    payload?: any,
+    linkUrl?: string,
+    linkText?: string
+  ) => {
     const timestamp = new Date().toLocaleTimeString("en-US", { hour12: false })
-    setLogs((prev) => [...prev, { timestamp, type, message, payload }])
+    setLogs((prev) => [...prev, { timestamp, type, message, payload, linkUrl, linkText }])
   }
 
   const runSimulation = async (forcedSpendLimit?: number) => {
@@ -158,7 +220,13 @@ export default function DemoPage() {
 
       if (checkoutRes.status === 402) {
         addLog("warn", `< HTTP/1.1 402 Payment Required | Order ID: ${checkoutData.order_id}`)
-        addLog("code", `[Moove Rail] Dynamic Link: ${checkoutData.moove_rail.payment_link}`)
+        addLog(
+          "code",
+          `[Moove Rail] Dynamic Link: ${checkoutData.moove_rail.payment_link}`,
+          undefined,
+          checkoutData.moove_rail.payment_link,
+          "Open Moove Pay Link ↗"
+        )
         addLog("info", `[Price Lock] Amount Due: $${checkoutData.amount_due_usdc} USDC | TTL: 15 minutes`)
       } else {
         throw new Error("Expected HTTP 402 challenge, received status " + checkoutRes.status)
@@ -211,23 +279,39 @@ export default function DemoPage() {
       if (verifyData.moove_verified_live) {
         addLog("success", `[Moove Live] Verified on-chain through live Moove Receive Agent endpoint!`)
       }
-      addLog("code", `[Receipt Hash] ${verifyData.settlement.tx_hash}`)
+
+      const explorerLink = getChainExplorerUrl(selectedChain, verifyData.settlement.tx_hash)
+      addLog(
+        "code",
+        `[Receipt Hash] ${verifyData.settlement.tx_hash}`,
+        undefined,
+        explorerLink,
+        `View on ${selectedChain.toUpperCase()} Explorer ↗`
+      )
       addLog("success", `[Fulfillment] Order finalized for @cogentapay. Token: ${verifyData.fulfillment.release_token}`)
 
-      // Update Merchant Ledger
-      setLedger((prev) => [
-        {
-          orderId: checkoutData.order_id,
-          buyerAgent: "agent_elizaos_402",
-          itemTitle: selectedProduct.title,
-          sourceChain: selectedChain,
-          amountUsdc: checkoutData.amount_due_usdc,
-          mooveProof: verifyData.settlement.tx_hash.slice(0, 14) + "..." + verifyData.settlement.tx_hash.slice(-4),
-          timestamp: "Just now",
-          status: "SETTLED",
-        },
-        ...prev,
-      ])
+      // Update Merchant Ledger & Persist to localStorage
+      const newLedgerItem: LedgerEntry = {
+        orderId: checkoutData.order_id,
+        buyerAgent: "agent_elizaos_402",
+        itemTitle: selectedProduct.title,
+        sourceChain: selectedChain,
+        amountUsdc: checkoutData.amount_due_usdc,
+        mooveProof: verifyData.settlement.tx_hash.slice(0, 14) + "..." + verifyData.settlement.tx_hash.slice(-4),
+        rawTxHash: verifyData.settlement.tx_hash,
+        mooveLinkId: checkoutData.moove_rail?.payment_link_id,
+        moovePaymentLink: checkoutData.moove_rail?.payment_link,
+        timestamp: "Just now",
+        status: "SETTLED",
+      }
+
+      setLedger((prev) => {
+        const updated = [newLedgerItem, ...prev]
+        try {
+          localStorage.setItem("cogentapay_ledger_v1", JSON.stringify(updated.slice(0, 50)))
+        } catch {}
+        return updated
+      })
     } catch (err: any) {
       addLog("error", `Simulation Error: ${err.message}`)
     } finally {
@@ -569,7 +653,7 @@ export default function DemoPage() {
                       </div>
                     ) : (
                       logs.map((log, idx) => (
-                        <div key={idx} className="flex items-start gap-2">
+                        <div key={idx} className="flex items-start gap-2 flex-wrap">
                           <span className="text-zinc-600 text-[10px] select-none">{log.timestamp}</span>
                           <span
                             className={
@@ -586,6 +670,17 @@ export default function DemoPage() {
                           >
                             {log.message}
                           </span>
+                          {log.linkUrl && (
+                            <a
+                              href={log.linkUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="px-1.5 py-0.5 rounded bg-zinc-800 hover:bg-zinc-700 text-emerald-400 text-[10px] font-mono border border-zinc-700 transition-colors inline-flex items-center gap-1"
+                            >
+                              <span>{log.linkText || "View Link"}</span>
+                              <span>↗</span>
+                            </a>
+                          )}
                         </div>
                       ))
                     )}
@@ -622,9 +717,40 @@ export default function DemoPage() {
                 {activeTab === "receipt" && (
                   <div>
                     {latestReceipt ? (
-                      <pre className="text-emerald-300 text-[11px] overflow-x-auto whitespace-pre-wrap">
-                        {JSON.stringify(latestReceipt, null, 2)}
-                      </pre>
+                      <div className="flex flex-col gap-3">
+                        <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-zinc-800">
+                          <span className="text-xs text-emerald-400 font-semibold flex items-center gap-1.5">
+                            <span>✓</span> Settlement Finalized & Verified On-Chain
+                          </span>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            {latestReceipt.settlement?.tx_hash && (
+                              <a
+                                href={getChainExplorerUrl(latestReceipt.settlement.source_chain, latestReceipt.settlement.tx_hash)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="px-2.5 py-1 rounded bg-zinc-800 hover:bg-zinc-700 text-cyan-300 text-[11px] font-mono flex items-center gap-1 border border-zinc-700 transition-colors"
+                              >
+                                <span>Explorer ({latestReceipt.settlement.source_chain?.toUpperCase() || "CHAIN"})</span>
+                                <span>↗</span>
+                              </a>
+                            )}
+                            {latestReceipt.moove_link_id && (
+                              <a
+                                href={`https://moove.xyz/@cogentapay/pay/${latestReceipt.moove_link_id}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="px-2.5 py-1 rounded bg-emerald-950/80 hover:bg-emerald-900/80 text-emerald-300 text-[11px] font-mono flex items-center gap-1 border border-emerald-800/80 transition-colors"
+                              >
+                                <span>Moove Receipt</span>
+                                <span>↗</span>
+                              </a>
+                            )}
+                          </div>
+                        </div>
+                        <pre className="text-emerald-300 text-[11px] overflow-x-auto whitespace-pre-wrap">
+                          {JSON.stringify(latestReceipt, null, 2)}
+                        </pre>
+                      </div>
                     ) : (
                       <p className="text-zinc-600 pt-20 text-center">No completed settlement receipt yet.</p>
                     )}
@@ -756,28 +882,70 @@ export default function DemoPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#F6F4F1] font-mono text-[11px]">
-                {ledger.map((item, i) => (
-                  <tr key={i} className="hover:bg-[#FAF9F7] transition-colors">
-                    <td className="py-3 px-3 text-[#847E79]">{item.timestamp}</td>
-                    <td className="py-3 px-3 font-bold text-[#37322F]">{item.orderId}</td>
-                    <td className="py-3 px-3 text-[#605A57]">{item.buyerAgent}</td>
-                    <td className="py-3 px-3 font-sans text-[#37322F] font-medium max-w-[200px] truncate">
-                      {item.itemTitle}
-                    </td>
-                    <td className="py-3 px-3">
-                      <span className="uppercase px-2 py-0.5 rounded bg-[#F2F0ED] text-[#37322F] text-[10px] font-semibold">
-                        {item.sourceChain}
-                      </span>
-                    </td>
-                    <td className="py-3 px-3 font-bold text-emerald-700">${item.amountUsdc} USDC</td>
-                    <td className="py-3 px-3 text-cyan-800 underline cursor-pointer">{item.mooveProof}</td>
-                    <td className="py-3 px-3">
-                      <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">
-                        {item.status}
-                      </span>
+                {ledger.length === 0 ? (
+                  <tr>
+                    <td colSpan={8} className="py-10 text-center text-zinc-500 font-sans">
+                      <div className="flex flex-col items-center justify-center gap-1.5">
+                        <span className="text-zinc-700 font-medium text-xs">No live settlements in this session yet</span>
+                        <span className="text-[11px] text-zinc-400 max-w-[400px]">
+                          Click &quot;Run Autonomous Agent Checkout&quot; above to execute the 4-step Moove payment loop and stream inbound transactions here.
+                        </span>
+                      </div>
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  ledger.map((item, i) => {
+                    const explorerUrl = getChainExplorerUrl(item.sourceChain, item.rawTxHash)
+                    const mooveUrl = item.moovePaymentLink || (item.mooveLinkId ? `https://moove.xyz/@cogentapay/pay/${item.mooveLinkId}` : null)
+                    return (
+                      <tr key={i} className="hover:bg-[#FAF9F7] transition-colors group">
+                        <td className="py-3 px-3 text-[#847E79]">{item.timestamp}</td>
+                        <td className="py-3 px-3 font-bold text-[#37322F]">{item.orderId}</td>
+                        <td className="py-3 px-3 text-[#605A57]">{item.buyerAgent}</td>
+                        <td className="py-3 px-3 font-sans text-[#37322F] font-medium max-w-[200px] truncate">
+                          {item.itemTitle}
+                        </td>
+                        <td className="py-3 px-3">
+                          <span className="uppercase px-2 py-0.5 rounded bg-[#F2F0ED] text-[#37322F] text-[10px] font-semibold">
+                            {item.sourceChain}
+                          </span>
+                        </td>
+                        <td className="py-3 px-3 font-bold text-emerald-700">${item.amountUsdc} USDC</td>
+                        <td className="py-3 px-3">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            {mooveUrl ? (
+                              <a
+                                href={mooveUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                title="Open Live Moove.xyz Hosted Payment Invoice"
+                                className="px-2 py-0.5 rounded bg-emerald-100 hover:bg-emerald-200 text-emerald-900 font-bold text-[10px] border border-emerald-300 transition-all inline-flex items-center gap-1 shadow-xs"
+                              >
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse"></span>
+                                <span>Moove Live Link</span>
+                                <span className="text-[9px]">↗</span>
+                              </a>
+                            ) : null}
+                            <a
+                              href={mooveUrl || explorerUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              title={`Proof: ${item.rawTxHash}`}
+                              className="text-zinc-600 hover:text-zinc-900 font-mono text-[10px] underline inline-flex items-center gap-0.5"
+                            >
+                              <span>{item.mooveProof}</span>
+                            </a>
+                          </div>
+                        </td>
+                        <td className="py-3 px-3">
+                          <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">
+                            {item.status}
+                          </span>
+                        </td>
+                      </tr>
+                    )
+                  })
+                )}
               </tbody>
             </table>
           </div>
