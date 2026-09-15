@@ -197,8 +197,8 @@ export default function ArchitectureSection() {
               <button
                 onClick={() => setActiveTab("agent")}
                 className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${activeTab === "agent"
-                    ? "bg-white text-[#37322F] shadow-xs"
-                    : "text-[#605A57] hover:text-[#37322F]"
+                  ? "bg-white text-[#37322F] shadow-xs"
+                  : "text-[#605A57] hover:text-[#37322F]"
                   }`}
               >
                 AI Agent SDK
@@ -206,8 +206,8 @@ export default function ArchitectureSection() {
               <button
                 onClick={() => setActiveTab("merchant")}
                 className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${activeTab === "merchant"
-                    ? "bg-white text-[#37322F] shadow-xs"
-                    : "text-[#605A57] hover:text-[#37322F]"
+                  ? "bg-white text-[#37322F] shadow-xs"
+                  : "text-[#605A57] hover:text-[#37322F]"
                   }`}
               >
                 Storefront Middleware
@@ -215,8 +215,8 @@ export default function ArchitectureSection() {
               <button
                 onClick={() => setActiveTab("spec")}
                 className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${activeTab === "spec"
-                    ? "bg-white text-[#37322F] shadow-xs"
-                    : "text-[#605A57] hover:text-[#37322F]"
+                  ? "bg-white text-[#37322F] shadow-xs"
+                  : "text-[#605A57] hover:text-[#37322F]"
                   }`}
               >
                 HTTP 402 Spec
@@ -267,7 +267,7 @@ export default function ArchitectureSection() {
             <div className="px-4 py-2 bg-zinc-900/60 border-t border-zinc-800/80 flex items-center justify-between text-[11px] text-zinc-400 font-sans">
               <span className="flex items-center gap-1.5 text-zinc-400">
                 <span className="w-1.5 h-1.5 rounded-full bg-amber-400/80"></span>
-                Testnet integration in progress • Moove solver rails
+                Testnet in progress • Moove solver rails
               </span>
               <span className="font-mono text-[10px]">v0.0.1-alpha • MIT License</span>
             </div>
