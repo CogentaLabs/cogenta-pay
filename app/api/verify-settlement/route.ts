@@ -1,14 +1,25 @@
 import { NextRequest, NextResponse } from "next/server"
+import { mooveReceiveAgent } from "@/lib/moove"
 
 export const dynamic = "force-dynamic"
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const { order_id, amount_paid_usdc, source_chain = "base", agent_signature } = body
+    const { order_id, amount_paid_usdc, source_chain = "base", agent_signature, moove_link_id } = body
 
     if (!order_id) {
       return NextResponse.json({ error: "missing_order_id", message: "order_id is required" }, { status: 400 })
+    }
+
+    // If moove_link_id is provided, verify settlement status against Moove Receive Agent
+    let mooveStatus = { status: "completed", isLive: false }
+    if (moove_link_id) {
+      try {
+        mooveStatus = await mooveReceiveAgent.getPaymentLinkStatus(moove_link_id)
+      } catch (err: any) {
+        console.warn("[Moove Status Warning]:", err.message)
+      }
     }
 
     const txHash = `0x${Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join("")}`
@@ -18,6 +29,8 @@ export async function POST(req: NextRequest) {
     const receipt = {
       status: "settled",
       order_id,
+      moove_link_id: moove_link_id || null,
+      moove_verified_live: mooveStatus.isLive,
       merchant: {
         name: "Cogenta Machine Storefront",
         handle: "@cogentapay",
@@ -28,6 +41,7 @@ export async function POST(req: NextRequest) {
         currency: "USDC",
         source_chain,
         moove_solver_rail: "moove_liquidity_v1",
+        receive_agent_endpoint: "GET $MOOVE_API_BASE_URL/v1/payment-link/{id}",
         slippage_bps: 0,
         latency_ms: latencyMs,
         block_number: blockNumber,

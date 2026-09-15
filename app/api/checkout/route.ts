@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
+import { mooveReceiveAgent } from "@/lib/moove"
 
 export const dynamic = "force-dynamic"
 
@@ -24,10 +25,15 @@ export async function POST(req: NextRequest) {
     const qty = Math.max(1, Number(quantity))
     const totalUsdc = (item.price * qty).toFixed(2)
 
-    // Generate unique machine order identifier and dynamic Moove link token
+    // Generate unique machine order identifier
     const orderId = `ord_${Math.random().toString(36).substring(2, 9)}_${Date.now().toString(36)}`
-    const mooveDynamicToken = `dyn_cgt_${Math.random().toString(36).substring(2, 10)}`
-    const moovePaymentLink = `https://pay.moove.xyz/pay/${mooveDynamicToken}?to=@cogentapay&amount=${totalUsdc}&asset=USDC`
+
+    // Call Moove Receive Agent to generate single-use hosted payment link (plain HTTP spec)
+    const mooveLink = await mooveReceiveAgent.createPaymentLink({
+      toAmount: totalUsdc,
+      description: orderId,
+      maxUsage: 1,
+    })
 
     const expiryTimestamp = Math.floor(Date.now() / 1000) + 15 * 60 // 15-minute lock
 
@@ -46,10 +52,13 @@ export async function POST(req: NextRequest) {
       settlement_recipient: "@cogentapay",
       moove_rail: {
         provider: "moove.xyz",
-        payment_link: moovePaymentLink,
+        payment_link_id: mooveLink.id,
+        payment_link: mooveLink.url,
+        is_live_moove: mooveLink.isLive,
         supported_source_chains: ["base", "solana", "ethereum", "polygon", "arbitrum"],
         selected_source_chain: source_chain,
         settlement_mode: "non_custodial_instant_usdc",
+        receive_agent_spec: "POST $MOOVE_API_BASE_URL/v1/payment-link",
       },
       expires_at: expiryTimestamp,
       idempotency_key: `idemp_${orderId}`,
@@ -62,6 +71,7 @@ export async function POST(req: NextRequest) {
       headers: {
         "X-Payment-Protocol": 'x402; version="1.0"',
         "X-Moove-Recipient": "@cogentapay",
+        "X-Moove-Link-ID": mooveLink.id,
         "X-402-Amount": totalUsdc,
         "X-402-Currency": "USDC",
         "Access-Control-Allow-Origin": "*",
