@@ -1,0 +1,10 @@
+<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="24" height="24" rx="12" fill="#000000"/>
+  <path d="M4 17.5L6.5 15H20L17.5 17.5H4ZM4 12.5L6.5 10H20L17.5 12.5H4ZM4 7.5L6.5 5H20L17.5 7.5H4Z" fill="url(#sol_grad)"/>
+  <defs>
+    <linearGradient id="sol_grad" x1="4" y1="5" x2="20" y2="17.5" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#00FFA3"/>
+      <stop offset="1" stop-color="#DC1FFF"/>
+    </linearGradient>
+  </defs>
+</svg>
