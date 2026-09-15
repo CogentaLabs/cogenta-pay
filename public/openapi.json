@@ -1,0 +1,192 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "CogentaPay Autonomous Merchant API",
+    "description": "Programmatic checkout gateway for autonomous AI shopping agents powered by Moove multi-chain non-custodial settlement rails.",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Cogenta Labs",
+      "url": "https://pay.cogentalabs.com",
+      "email": "support@cogentalabs.com"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://pay.cogentalabs.com",
+      "description": "Production Server"
+    },
+    {
+      "url": "http://localhost:3000",
+      "description": "Local Development / Simulator"
+    }
+  ],
+  "paths": {
+    "/api/agent-catalog": {
+      "get": {
+        "summary": "Discover Machine Storefront Catalog",
+        "description": "Returns store metadata, Moove settlement handle, supported protocols, and active product SKUs with inventory and supported source chains.",
+        "operationId": "getAgentCatalog",
+        "responses": {
+          "200": {
+            "description": "Machine catalog manifest resolved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "version": { "type": "string" },
+                    "store": {
+                      "type": "object",
+                      "properties": {
+                        "name": { "type": "string" },
+                        "domain": { "type": "string" },
+                        "moove_handle": { "type": "string" },
+                        "settlement_asset": { "type": "string" }
+                      }
+                    },
+                    "protocols_supported": {
+                      "type": "array",
+                      "items": { "type": "string" }
+                    },
+                    "products": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": { "type": "string" },
+                          "sku": { "type": "string" },
+                          "title": { "type": "string" },
+                          "price_usdc": { "type": "string" },
+                          "stock_quantity": { "type": "number" },
+                          "supported_source_chains": {
+                            "type": "array",
+                            "items": { "type": "string" }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/checkout": {
+      "post": {
+        "summary": "Negotiate HTTP 402 Quote",
+        "description": "Submits purchase intent and receives an HTTP 402 Payment Required invoice with a dynamic single-use Moove payment link and 15-minute price lock signature.",
+        "operationId": "createCheckoutQuote",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["product_id", "quantity"],
+                "properties": {
+                  "product_id": { "type": "string", "example": "prod_h100_gpu" },
+                  "quantity": { "type": "number", "example": 1 },
+                  "source_chain": { "type": "string", "example": "base" },
+                  "agent_id": { "type": "string", "example": "agent_elizaos_402" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "402": {
+            "description": "Payment Required invoice generated with Moove dynamic payment link",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": { "type": "string", "example": "payment_required" },
+                    "protocol": { "type": "string", "example": "coinbase-x402" },
+                    "order_id": { "type": "string", "example": "ord_a1b2c3d4" },
+                    "amount_due_usdc": { "type": "string", "example": "3.85" },
+                    "settlement_recipient": { "type": "string", "example": "@cogentapay" },
+                    "moove_rail": {
+                      "type": "object",
+                      "properties": {
+                        "payment_link": { "type": "string" },
+                        "moove_recipient": { "type": "string" },
+                        "settlement_mode": { "type": "string" }
+                      }
+                    },
+                    "signature": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/verify-settlement": {
+      "post": {
+        "summary": "Verify Settlement & Release Order",
+        "description": "Verifies on-chain settlement proof through Moove rails and issues a cryptographically signed settlement receipt with fulfillment tokens.",
+        "operationId": "verifySettlement",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["order_id", "amount_paid_usdc"],
+                "properties": {
+                  "order_id": { "type": "string" },
+                  "amount_paid_usdc": { "type": "string" },
+                  "source_chain": { "type": "string" },
+                  "agent_signature": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Settlement finalized and order fulfilled",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": { "type": "string", "example": "settled" },
+                    "order_id": { "type": "string" },
+                    "merchant": {
+                      "type": "object",
+                      "properties": {
+                        "handle": { "type": "string", "example": "@cogentapay" },
+                        "settled_vault": { "type": "string" }
+                      }
+                    },
+                    "settlement": {
+                      "type": "object",
+                      "properties": {
+                        "amount_settled": { "type": "string" },
+                        "source_chain": { "type": "string" },
+                        "tx_hash": { "type": "string" },
+                        "latency_ms": { "type": "number" }
+                      }
+                    },
+                    "fulfillment": {
+                      "type": "object",
+                      "properties": {
+                        "instant_access": { "type": "boolean" },
+                        "release_token": { "type": "string" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

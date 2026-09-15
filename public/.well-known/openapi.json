@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "openapi": "3.1.0",
+  "info": {
+    "title": "CogentaPay Autonomous Merchant API",
+    "description": "Programmatic checkout gateway for autonomous AI shopping agents powered by Moove multi-chain non-custodial settlement rails.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    { "url": "https://pay.cogentalabs.com" }
+  ],
+  "paths": {
+    "/api/agent-catalog": { "get": { "summary": "Discover Machine Storefront Catalog" } },
+    "/api/checkout": { "post": { "summary": "Negotiate HTTP 402 Quote with Moove Payment Link" } },
+    "/api/verify-settlement": { "post": { "summary": "Verify Settlement & Release Order" } }
+  }
+}
