@@ -24,14 +24,14 @@ const faqData: FAQItem[] = [
       "Agents can pay in stablecoins from any of 37+ supported chains. Our liquidity layer, powered by Moove, aggregates and routes the payment so the agent spends from whatever asset it holds while you always receive guaranteed USDC settlement.",
   },
   {
-    question: "How does agentic payment with card work?",
+    question: "How do agent spending limits and session keys work?",
     answer:
-      "For agents operating on traditional rails, CogentaPay accepts tokenized card credentials paired with signed spending mandates. The mandate proves the agent is authorized to transact on a user's behalf, so payments clear without 3D Secure friction while staying fully auditable.",
+      "Users grant autonomous agents bounded spend mandates using ephemeral session keys (ERC-4337 standard). The agent can only execute payments within its configured spend limit and expiry window, ensuring complete user control with zero manual checkout friction.",
   },
   {
     question: "How do I add CogentaPay to my store?",
     answer:
-      "Drop in our WooCommerce or Shopify plugin, or call the REST API directly. Most merchants are live in an afternoon. Once installed, agent traffic is detected automatically and routed through the appropriate card, crypto, or x402 rail.",
+      "Drop in our WooCommerce or storefront plugin, or call the REST API directly. Once installed, agent traffic is detected automatically, issued an HTTP 402 invoice, and settled directly into merchant USDC via Moove non-custodial rails.",
   },
   {
     question: "How are disputes and reconciliation handled?",
@@ -63,7 +63,7 @@ export default function FAQSection() {
   }
 
   return (
-    <div className="w-full flex justify-center items-start">
+    <div id="faq" className="w-full flex justify-center items-start scroll-mt-20">
       <div className="flex-1 px-4 md:px-12 py-16 md:py-20 flex flex-col lg:flex-row justify-start items-start gap-6 lg:gap-12">
         {/* Left Column - Header */}
         <div className="w-full lg:flex-1 flex flex-col justify-center items-start gap-4 lg:py-5">

@@ -21,11 +21,11 @@ export default function DocumentationSection() {
 
   const cards = [
     {
-      title: "Agentic payment with card",
-      description: "Agents present tokenized card credentials and\nsigned mandates — no CAPTCHA, no 3D Secure.",
+      title: "Machine-readable catalogs",
+      description: "Stores expose standardized JSON endpoints so\nAI agents discover items and pricing directly.",
     },
     {
-      title: "Agentic payment with crypto",
+      title: "Multi-chain settlement",
       description: "Accept stablecoins from 37+ chains, settled\ninstantly into merchant USDC via Moove.",
     },
     {
@@ -49,7 +49,7 @@ export default function DocumentationSection() {
   }
 
   return (
-    <div className="w-full border-b border-[rgba(55,50,47,0.12)] flex flex-col justify-center items-center">
+    <div id="protocol" className="w-full border-b border-[rgba(55,50,47,0.12)] flex flex-col justify-center items-center scroll-mt-20">
       {/* Header Section */}
       <div className="self-stretch px-6 md:px-24 py-12 md:py-16 border-b border-[rgba(55,50,47,0.12)] flex justify-center items-center gap-6">
         <div className="w-full max-w-[586px] px-6 py-5 shadow-[0px_2px_4px_rgba(50,45,43,0.06)] overflow-hidden rounded-lg flex flex-col justify-start items-center gap-4 shadow-none">
@@ -57,15 +57,15 @@ export default function DocumentationSection() {
             icon={
               <div className="w-[10.50px] h-[10.50px] outline outline-[1.17px] outline-[#37322F] outline-offset-[-0.58px] rounded-full"></div>
             }
-            text="Payment Methods"
+            text="Autonomous Rails"
           />
           <div className="self-stretch text-center flex justify-center flex-col text-[#49423D] text-3xl md:text-5xl font-semibold leading-tight md:leading-[60px] font-sans tracking-tight">
-            Every way an agent can pay
+            How agents interact and settle
           </div>
           <div className="self-stretch text-center text-[#605A57] text-base font-normal leading-7 font-sans">
-            Autonomous settlement via crypto, x402, and tokenized mandates —
+            Machine catalogs, multi-chain liquidity aggregation, and HTTP 402 protocols —
             <br />
-            one integration that lets AI agents check out however they hold value.
+            one unified architecture built from the ground up for software that shops.
           </div>
         </div>
       </div>
@@ -109,63 +109,47 @@ export default function DocumentationSection() {
             })}
           </div>
 
-          {/* Right Column - Dedicated Visual Display (Tailored per Payment Type) */}
+          {/* Right Column - Dedicated Visual Display (Tailored per Capability) */}
           <div className="w-full md:w-auto rounded-lg flex flex-col justify-center items-center gap-2 order-1 md:order-2 md:px-0 px-0">
             <div className="w-full md:w-[580px] h-[320px] sm:h-[360px] md:h-[420px] bg-[#FAFAF9] shadow-[0px_0px_0px_0.9056603908538818px_rgba(0,0,0,0.08)] overflow-hidden rounded-xl flex flex-col justify-center items-center relative border border-[rgba(55,50,47,0.06)]">
               
-              {/* Visual 0: Agentic Payment with Card / Tokenized Mandates */}
+              {/* Visual 0: Machine-Readable Catalog & Session Mandate Inspector */}
               <div
                 className={`absolute inset-0 p-6 md:p-8 flex flex-col justify-between items-center transition-all duration-500 ease-in-out ${
                   activeCard === 0 ? "opacity-100 scale-100 blur-0" : "opacity-0 scale-95 blur-sm pointer-events-none"
                 }`}
               >
-                {/* Simulated Virtual Card */}
-                <div className="w-full max-w-[420px] h-[190px] sm:h-[210px] rounded-2xl p-6 bg-gradient-to-br from-[#2D2A26] via-[#1E1B18] to-[#121110] text-white shadow-xl flex flex-col justify-between relative overflow-hidden border border-[#443F3A]">
-                  <div className="absolute top-0 right-0 w-44 h-44 bg-gradient-to-bl from-white/10 to-transparent rounded-full pointer-events-none -mr-16 -mt-16"></div>
-                  
-                  <div className="flex justify-between items-center relative z-10">
-                    <div className="flex items-center gap-2">
-                      <div className="w-7 h-5 rounded bg-gradient-to-r from-amber-300 to-yellow-500 flex items-center justify-center shadow-inner">
-                        <div className="w-4 h-3 border border-amber-600/40 rounded-sm"></div>
-                      </div>
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-white/70">
-                        <path d="M8.5 16.5C9.5 15.5 11 15 12 15C13 15 14.5 15.5 15.5 16.5M6 13C7.5 11.5 9.5 11 12 11C14.5 11 16.5 11.5 18 13M3.5 9.5C6 7 8.5 6.5 12 6.5C15.5 6.5 18 7 20.5 9.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-                      </svg>
+                {/* Catalog Card Preview */}
+                <div className="w-full max-w-[440px] rounded-xl p-5 bg-[#18181B] text-zinc-300 shadow-md border border-zinc-800 flex flex-col justify-between font-mono text-xs">
+                  <div className="flex justify-between items-center pb-2.5 border-b border-zinc-800">
+                    <div className="flex items-center gap-2 text-zinc-400">
+                      <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+                      <span>/.well-known/agent-catalog.json</span>
                     </div>
-                    <span className="text-[11px] font-mono uppercase tracking-wider text-white/70 bg-white/10 px-2 py-0.5 rounded-full border border-white/15">
-                      Tokenized Mandate
-                    </span>
+                    <span className="text-[10px] text-zinc-500 uppercase tracking-wider">Machine Endpoint</span>
                   </div>
 
-                  <div className="relative z-10 my-1">
-                    <div className="font-mono text-base sm:text-lg tracking-[0.25em] text-white/90 font-medium">
-                      •••• •••• •••• 4242
-                    </div>
+                  <div className="py-3 space-y-1 text-[11px] leading-relaxed">
+                    <div className="text-zinc-500">// Machine-readable product spec</div>
+                    <div><span className="text-blue-400">&quot;sku&quot;</span>: <span className="text-amber-300">&quot;cloud-gpu-instance-h100&quot;</span>,</div>
+                    <div><span className="text-blue-400">&quot;price&quot;</span>: <span className="text-emerald-400">&quot;4.50 USDC&quot;</span>,</div>
+                    <div><span className="text-blue-400">&quot;settlement&quot;</span>: <span className="text-amber-300">&quot;moove-cross-chain-rails&quot;</span></div>
                   </div>
 
-                  <div className="flex justify-between items-end relative z-10 text-xs">
-                    <div>
-                      <div className="text-[9px] uppercase tracking-wider text-white/50 font-mono">Agent Identity</div>
-                      <div className="font-mono text-white/90 text-[11px] sm:text-xs">AGENT_MANDATE_0x8F</div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-[9px] uppercase tracking-wider text-white/50 font-mono">Auth Status</div>
-                      <div className="text-emerald-400 font-mono text-[11px] sm:text-xs font-semibold flex items-center gap-1.5">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                        Mandate Signed
-                      </div>
-                    </div>
+                  <div className="pt-2 border-t border-zinc-800 flex justify-between items-center text-[10px] text-zinc-400">
+                    <span>Zero HTML scraping</span>
+                    <span className="text-emerald-400 font-semibold">Live Machine Quote</span>
                   </div>
                 </div>
 
-                {/* Mandate Policy Spec Box */}
-                <div className="w-full max-w-[420px] bg-white border border-[#E0DEDB] rounded-xl p-3.5 shadow-sm flex justify-between items-center text-xs">
+                {/* Session Mandate Policy Spec Box */}
+                <div className="w-full max-w-[440px] bg-white border border-[#E0DEDB] rounded-xl p-3.5 shadow-sm flex justify-between items-center text-xs">
                   <div className="flex flex-col">
-                    <span className="text-[#37322F] font-medium font-sans">Mandate #MND-8402-AUTH</span>
-                    <span className="text-[11px] text-[#605A57] font-sans">Spend limit: $250.00 / session • 0 Human Clicks</span>
+                    <span className="text-[#37322F] font-semibold font-sans">Session Mandate: 0x8fB9...3a91</span>
+                    <span className="text-[11px] text-[#605A57] font-sans">Bounded spend limit: $50.00 max • Ephemeral ERC-4337</span>
                   </div>
                   <span className="px-2.5 py-1 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-full font-medium text-[11px] font-sans">
-                    3DS Exempt
+                    Machine Signed
                   </span>
                 </div>
               </div>

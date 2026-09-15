@@ -1,0 +1,80 @@
+import { NextResponse } from "next/server"
+
+export const dynamic = "force-dynamic"
+
+export async function GET() {
+  const catalog = {
+    $schema: "https://pay.cogentalabs.com/schemas/agent-catalog-v1.json",
+    version: "1.0",
+    store: {
+      name: "Cogenta Machine Storefront",
+      domain: "pay.cogentalabs.com",
+      moove_handle: "@cogentalabs",
+      settlement_asset: "USDC",
+      settlement_rails: "moove_cross_chain",
+    },
+    protocols_supported: ["coinbase-x402", "google-ap2", "openai-acp"],
+    endpoints: {
+      catalog: "https://pay.cogentalabs.com/api/agent-catalog",
+      quote: "https://pay.cogentalabs.com/api/checkout",
+      settle: "https://pay.cogentalabs.com/api/verify-settlement",
+    },
+    products: [
+      {
+        id: "prod_h100_gpu",
+        sku: "COMPUTE-H100-1HR",
+        title: "On-Demand H100 GPU Cluster (1 Hour)",
+        description: "Direct autonomous compute allocation with instant API token release upon settlement.",
+        price_usdc: 3.85,
+        inventory_status: "in_stock",
+        stock_quantity: 128,
+        requires_shipping: false,
+        supported_source_chains: ["base", "solana", "ethereum", "polygon", "arbitrum"],
+      },
+      {
+        id: "prod_agent_key",
+        sku: "HW-SEC-ENCLAVE",
+        title: "Autonomous Agent HSM Security Key",
+        description: "Hardware enclave for delegated session key signing and human mandate spend isolation.",
+        price_usdc: 89.0,
+        inventory_status: "in_stock",
+        stock_quantity: 42,
+        requires_shipping: true,
+        shipping_weight_kg: 0.15,
+        supported_source_chains: ["base", "solana", "ethereum", "polygon", "arbitrum"],
+      },
+      {
+        id: "prod_data_oracle",
+        sku: "DATA-FIN-STREAM",
+        title: "Real-Time Financial Oracle Stream",
+        description: "Sub-millisecond market feed access for algorithmic trading agents.",
+        price_usdc: 15.0,
+        inventory_status: "in_stock",
+        stock_quantity: 999,
+        requires_shipping: false,
+        supported_source_chains: ["base", "solana", "ethereum", "polygon", "arbitrum"],
+      },
+    ],
+  }
+
+  return NextResponse.json(catalog, {
+    status: 200,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization",
+      "Cache-Control": "public, max-age=60, stale-while-revalidate=300",
+    },
+  })
+}
+
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 204,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization",
+    },
+  })
+}
