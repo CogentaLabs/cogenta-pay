@@ -62,17 +62,53 @@ interface LogEntry {
   payload?: any
 }
 
+interface LedgerEntry {
+  orderId: string
+  buyerAgent: string
+  itemTitle: string
+  sourceChain: string
+  amountUsdc: string
+  mooveProof: string
+  timestamp: string
+  status: "SETTLED"
+}
+
+const INITIAL_LEDGER: LedgerEntry[] = [
+  {
+    orderId: "ord_a7f9_x102",
+    buyerAgent: "agent_elizaos_402",
+    itemTitle: "On-Demand H100 GPU Cluster (1 Hour)",
+    sourceChain: "base",
+    amountUsdc: "3.85",
+    mooveProof: "0x8fa1b49e2a384b...71c2",
+    timestamp: "2 mins ago",
+    status: "SETTLED",
+  },
+  {
+    orderId: "ord_b4e2_m991",
+    buyerAgent: "agent_langchain_sol",
+    itemTitle: "Real-Time Financial Oracle Stream",
+    sourceChain: "solana",
+    amountUsdc: "15.00",
+    mooveProof: "0x39dc44a1e9b27f...0fa8",
+    timestamp: "11 mins ago",
+    status: "SETTLED",
+  },
+]
+
 export default function DemoPage() {
   const [selectedProduct, setSelectedProduct] = useState<Product>(PRODUCTS[0])
   const [quantity, setQuantity] = useState(1)
   const [selectedChain, setSelectedChain] = useState(CHAINS[0].id)
   const [spendLimit, setSpendLimit] = useState(150)
   const [isRunning, setIsRunning] = useState(false)
-  const [activeTab, setActiveTab] = useState<"logs" | "payload402" | "receipt">("logs")
+  const [activeTab, setActiveTab] = useState<"logs" | "payload402" | "receipt" | "moove_http" | "curl">("logs")
   const [logs, setLogs] = useState<LogEntry[]>([])
   const [latest402, setLatest402] = useState<any>(null)
   const [latestReceipt, setLatestReceipt] = useState<any>(null)
   const [stepState, setStepState] = useState<number>(0) // 0: Idle, 1: Catalog, 2: 402 Quote, 3: Mandate Check, 4: Moove Settle, 5: Done
+  const [ledger, setLedger] = useState<LedgerEntry[]>(INITIAL_LEDGER)
+  const [copiedCurl, setCopiedCurl] = useState(false)
 
   const totalCost = (selectedProduct.price_usdc * quantity).toFixed(2)
 
@@ -81,13 +117,15 @@ export default function DemoPage() {
     setLogs((prev) => [...prev, { timestamp, type, message, payload }])
   }
 
-  const runSimulation = async () => {
+  const runSimulation = async (forcedSpendLimit?: number) => {
     if (isRunning) return
     setIsRunning(true)
     setLogs([])
     setLatest402(null)
     setLatestReceipt(null)
     setStepState(1)
+
+    const effectiveLimit = forcedSpendLimit !== undefined ? forcedSpendLimit : spendLimit
 
     // Step 1: Query Machine Catalog
     addLog("info", `[Agent] Querying machine-readable catalog from /.well-known/agent-catalog.json...`)
@@ -131,24 +169,25 @@ export default function DemoPage() {
 
       // Step 3: Human Spending Mandate Validation
       const costNum = parseFloat(checkoutData.amount_due_usdc)
-      addLog("info", `[Mandate Engine] Evaluating spending policy (Total: $${costNum} USDC vs Session Cap: $${spendLimit} USDC)...`)
+      addLog("info", `[Mandate Engine] Evaluating spending policy (Total: $${costNum} USDC vs Session Cap: $${effectiveLimit} USDC)...`)
 
-      if (costNum > spendLimit) {
+      if (costNum > effectiveLimit) {
         addLog(
           "error",
-          `[POLICY REFUSAL] Transaction blocked! Order amount ($${costNum}) exceeds human mandate limit ($${spendLimit}). Execution halted safely.`
+          `[POLICY REFUSAL] Transaction blocked! Order amount ($${costNum}) exceeds authorized spend cap ($${effectiveLimit}). Execution halted safely.`
         )
         setIsRunning(false)
         setStepState(0)
         return
       }
 
-      addLog("success", `[Mandate Approved] $${costNum} USDC is within authorized spend cap of $${spendLimit} USDC. Proceeding to settle...`)
+      addLog("success", `[Mandate Approved] $${costNum} USDC is within authorized spend cap of $${effectiveLimit} USDC. Proceeding to settle...`)
       setStepState(4)
       await new Promise((r) => setTimeout(r, 800))
 
       // Step 4: Settle on Moove Rails Non-Interactively
       addLog("info", `[Moove Solver] Signing transaction from agent wallet via ${selectedChain.toUpperCase()} liquidity bridge...`)
+      addLog("code", `[Moove Receive Agent] Linking order to Moove link ID: ${checkoutData.moove_rail?.payment_link_id || "pl_default"}`)
       addLog("info", `[Settlement] Converting source asset into guaranteed merchant USDC at zero slippage...`)
 
       const verifyRes = await fetch("/api/verify-settlement", {
@@ -159,6 +198,7 @@ export default function DemoPage() {
           amount_paid_usdc: checkoutData.amount_due_usdc,
           source_chain: selectedChain,
           agent_signature: checkoutData.signature,
+          moove_link_id: checkoutData.moove_rail?.payment_link_id,
         }),
       })
 
@@ -168,13 +208,41 @@ export default function DemoPage() {
       await new Promise((r) => setTimeout(r, 600))
       setStepState(5)
       addLog("success", `< HTTP/1.1 200 OK | Settlement Confirmed on Moove! Latency: ${verifyData.settlement.latency_ms}ms`)
+      if (verifyData.moove_verified_live) {
+        addLog("success", `[Moove Live] Verified on-chain through live Moove Receive Agent endpoint!`)
+      }
       addLog("code", `[Receipt Hash] ${verifyData.settlement.tx_hash}`)
       addLog("success", `[Fulfillment] Order finalized for @cogentapay. Token: ${verifyData.fulfillment.release_token}`)
+
+      // Update Merchant Ledger
+      setLedger((prev) => [
+        {
+          orderId: checkoutData.order_id,
+          buyerAgent: "agent_elizaos_402",
+          itemTitle: selectedProduct.title,
+          sourceChain: selectedChain,
+          amountUsdc: checkoutData.amount_due_usdc,
+          mooveProof: verifyData.settlement.tx_hash.slice(0, 14) + "..." + verifyData.settlement.tx_hash.slice(-4),
+          timestamp: "Just now",
+          status: "SETTLED",
+        },
+        ...prev,
+      ])
     } catch (err: any) {
       addLog("error", `Simulation Error: ${err.message}`)
     } finally {
       setIsRunning(false)
     }
+  }
+
+  const sampleCurl = `curl -i -X POST https://pay.cogentalabs.com/api/checkout \\
+  -H "Content-Type: application/json" \\
+  -d '{"product_id":"${selectedProduct.id}","quantity":${quantity},"source_chain":"${selectedChain}"}'`
+
+  const copyCurlToClipboard = () => {
+    navigator.clipboard.writeText(sampleCurl)
+    setCopiedCurl(true)
+    setTimeout(() => setCopiedCurl(false), 2000)
   }
 
   return (
@@ -202,6 +270,14 @@ export default function DemoPage() {
             className="text-xs font-mono text-[#605A57] hover:text-[#37322F] underline hidden sm:inline"
           >
             /.well-known/agent-catalog.json
+          </a>
+          <a
+            href="/openapi.json"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs font-mono text-[#605A57] hover:text-[#37322F] underline hidden md:inline"
+          >
+            /openapi.json
           </a>
           <Link
             href="/"
@@ -335,7 +411,7 @@ export default function DemoPage() {
                 </div>
 
                 {/* Human Mandate Limit Slider */}
-                <div className="flex flex-col gap-1.5 bg-[#FAF9F7] p-3.5 rounded-xl border border-[#EBE8E3]">
+                <div className="flex flex-col gap-2 bg-[#FAF9F7] p-3.5 rounded-xl border border-[#EBE8E3]">
                   <div className="flex justify-between items-center text-xs">
                     <span className="font-semibold text-[#37322F] font-sans">Human Spending Mandate Cap</span>
                     <span className="font-mono font-bold text-[#37322F]">${spendLimit}.00 USDC</span>
@@ -350,9 +426,19 @@ export default function DemoPage() {
                     onChange={(e) => setSpendLimit(Number(e.target.value))}
                     className="w-full accent-[#37322F] cursor-pointer"
                   />
-                  <span className="text-[10px] text-[#847E79] font-sans">
-                    Agent will block any quote above this cap before signing Moove transaction.
-                  </span>
+                  <div className="flex justify-between items-center pt-1">
+                    <span className="text-[10px] text-[#847E79] font-sans">
+                      Enforces cryptographic stop-loss limit.
+                    </span>
+                    <button
+                      type="button"
+                      disabled={isRunning}
+                      onClick={() => runSimulation(1.0)}
+                      className="text-[10px] font-mono text-amber-700 hover:text-amber-800 underline cursor-pointer"
+                    >
+                      ⚡ Test Policy Refusal ($1.00 Cap)
+                    </button>
+                  </div>
                 </div>
 
                 {/* Total Summary */}
@@ -382,7 +468,7 @@ export default function DemoPage() {
 
                 <div className="flex items-center gap-2">
                   <button
-                    onClick={runSimulation}
+                    onClick={() => runSimulation()}
                     disabled={isRunning}
                     className="px-5 py-2 rounded-full text-xs font-bold font-sans bg-emerald-500 hover:bg-emerald-400 text-zinc-950 transition-all shadow-md flex items-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                   >
@@ -422,10 +508,10 @@ export default function DemoPage() {
               </div>
 
               {/* Navigation Tabs */}
-              <div className="flex items-center gap-4 text-xs font-mono border-b border-zinc-800">
+              <div className="flex items-center gap-3 text-xs font-mono border-b border-zinc-800 overflow-x-auto">
                 <button
                   onClick={() => setActiveTab("logs")}
-                  className={`pb-2 border-b-2 transition-all ${activeTab === "logs"
+                  className={`pb-2 border-b-2 transition-all whitespace-nowrap ${activeTab === "logs"
                     ? "border-emerald-400 text-emerald-400 font-semibold"
                     : "border-transparent text-zinc-500 hover:text-zinc-300"
                     }`}
@@ -434,7 +520,7 @@ export default function DemoPage() {
                 </button>
                 <button
                   onClick={() => setActiveTab("payload402")}
-                  className={`pb-2 border-b-2 transition-all ${activeTab === "payload402"
+                  className={`pb-2 border-b-2 transition-all whitespace-nowrap ${activeTab === "payload402"
                     ? "border-emerald-400 text-emerald-400 font-semibold"
                     : "border-transparent text-zinc-500 hover:text-zinc-300"
                     }`}
@@ -443,12 +529,30 @@ export default function DemoPage() {
                 </button>
                 <button
                   onClick={() => setActiveTab("receipt")}
-                  className={`pb-2 border-b-2 transition-all ${activeTab === "receipt"
+                  className={`pb-2 border-b-2 transition-all whitespace-nowrap ${activeTab === "receipt"
                     ? "border-emerald-400 text-emerald-400 font-semibold"
                     : "border-transparent text-zinc-500 hover:text-zinc-300"
                     }`}
                 >
                   Settlement Receipt {latestReceipt ? "✓" : ""}
+                </button>
+                <button
+                  onClick={() => setActiveTab("moove_http")}
+                  className={`pb-2 border-b-2 transition-all whitespace-nowrap ${activeTab === "moove_http"
+                    ? "border-emerald-400 text-emerald-400 font-semibold"
+                    : "border-transparent text-zinc-500 hover:text-zinc-300"
+                    }`}
+                >
+                  Moove Receive Agent (HTTP)
+                </button>
+                <button
+                  onClick={() => setActiveTab("curl")}
+                  className={`pb-2 border-b-2 transition-all whitespace-nowrap ${activeTab === "curl"
+                    ? "border-emerald-400 text-emerald-400 font-semibold"
+                    : "border-transparent text-zinc-500 hover:text-zinc-300"
+                    }`}
+                >
+                  cURL / API Test
                 </button>
               </div>
 
@@ -491,9 +595,24 @@ export default function DemoPage() {
                 {activeTab === "payload402" && (
                   <div>
                     {latest402 ? (
-                      <pre className="text-cyan-300 text-[11px] overflow-x-auto whitespace-pre-wrap">
-                        {JSON.stringify(latest402, null, 2)}
-                      </pre>
+                      <div className="flex flex-col gap-3">
+                        <div className="flex justify-between items-center pb-2 border-b border-zinc-800">
+                          <span className="text-xs text-zinc-400">HTTP/1.1 402 Payment Required</span>
+                          {latest402.moove_rail?.payment_link && (
+                            <a
+                              href={latest402.moove_rail.payment_link}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-[11px] text-emerald-400 hover:text-emerald-300 underline"
+                            >
+                              Open Moove Pay Link ↗
+                            </a>
+                          )}
+                        </div>
+                        <pre className="text-cyan-300 text-[11px] overflow-x-auto whitespace-pre-wrap">
+                          {JSON.stringify(latest402, null, 2)}
+                        </pre>
+                      </div>
                     ) : (
                       <p className="text-zinc-600 pt-20 text-center">No HTTP 402 challenge recorded yet.</p>
                     )}
@@ -511,6 +630,86 @@ export default function DemoPage() {
                     )}
                   </div>
                 )}
+
+                {activeTab === "moove_http" && (
+                  <div className="flex flex-col gap-4">
+                    <div className="bg-amber-950/40 border border-amber-800/50 p-3.5 rounded-lg flex flex-col gap-1.5">
+                      <div className="flex items-center gap-1.5 text-amber-400 font-semibold text-xs">
+                        <span>⚡</span>
+                        <span>Moove Receive Agent Specification (Plain HTTP)</span>
+                      </div>
+                      <p className="text-[11px] text-zinc-300 leading-relaxed font-sans">
+                        Per Moove docs (<a href="https://docs.moove.xyz/sdks/introduction" target="_blank" rel="noopener noreferrer" className="text-amber-400 underline font-mono">docs.moove.xyz/sdks/introduction</a>): There is no npm package yet. The API is plain HTTP and works from any language. CogentaPay implements the official Moove Receive Agent endpoints:
+                      </p>
+                    </div>
+
+                    <div className="flex flex-col gap-1.5">
+                      <div className="flex justify-between items-center text-[11px]">
+                        <span className="text-zinc-300 font-bold">1. POST $MOOVE_API_BASE_URL/v1/payment-link</span>
+                        <span className="text-[10px] text-zinc-500">Create one-off hosted link</span>
+                      </div>
+                      <pre className="text-cyan-300 bg-zinc-900/90 p-3 rounded-lg border border-zinc-800 text-[11px] overflow-x-auto whitespace-pre-wrap">
+{`curl -sS -X POST "https://api.moove.xyz/v1/payment-link" \\
+  -H "X-API-Key: $MOOVE_API_KEY" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+        "toAmount": "${totalCost}",
+        "description": "${latest402?.order_id || 'ord_agent_session'}",
+        "maxUsage": 1,
+        "expirationDate": null
+      }'`}
+                      </pre>
+                    </div>
+
+                    <div className="flex flex-col gap-1.5">
+                      <div className="flex justify-between items-center text-[11px]">
+                        <span className="text-zinc-300 font-bold">2. GET $MOOVE_API_BASE_URL/v1/payment-link/$LINK_ID</span>
+                        <span className="text-[10px] text-zinc-500">Poll payment settlement</span>
+                      </div>
+                      <pre className="text-emerald-300 bg-zinc-900/90 p-3 rounded-lg border border-zinc-800 text-[11px] overflow-x-auto whitespace-pre-wrap">
+{`curl -sS "https://api.moove.xyz/v1/payment-link/${latest402?.moove_rail?.payment_link_id || '$LINK_ID'}" \\
+  -H "X-API-Key: $MOOVE_API_KEY"`}
+                      </pre>
+                    </div>
+
+                    {latest402?.moove_rail && (
+                      <div className="bg-zinc-900/80 border border-zinc-800 p-3 rounded-lg flex flex-col gap-1 text-[11px]">
+                        <div className="text-zinc-400 font-sans">Active Moove Link for Current Session:</div>
+                        <div className="text-emerald-400 font-mono break-all">{latest402.moove_rail.payment_link}</div>
+                        <div className="text-[10px] text-zinc-500 font-mono">Link ID: {latest402.moove_rail.payment_link_id} | Live Moove: {latest402.moove_rail.is_live_moove ? "YES" : "SANDBOX/SIMULATED"}</div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {activeTab === "curl" && (
+                  <div className="flex flex-col gap-4">
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs text-zinc-400 font-sans">
+                        Test this live API endpoint in your terminal:
+                      </span>
+                      <button
+                        onClick={copyCurlToClipboard}
+                        className="px-2.5 py-1 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-[11px] flex items-center gap-1.5 transition-colors"
+                      >
+                        <span>{copiedCurl ? "✓ Copied!" : "📋 Copy cURL"}</span>
+                      </button>
+                    </div>
+
+                    <pre className="text-amber-300 bg-zinc-900/90 p-3 rounded-lg border border-zinc-800 text-[11px] overflow-x-auto whitespace-pre-wrap">
+                      {sampleCurl}
+                    </pre>
+
+                    <div className="flex flex-col gap-2 pt-2 border-t border-zinc-800">
+                      <span className="text-[11px] text-zinc-400">Step 2 Settlement Verification Command:</span>
+                      <pre className="text-emerald-300 bg-zinc-900/90 p-3 rounded-lg border border-zinc-800 text-[11px] overflow-x-auto whitespace-pre-wrap">
+{`curl -i -X POST https://pay.cogentalabs.com/api/verify-settlement \\
+  -H "Content-Type: application/json" \\
+  -d '{"order_id":"ord_demo_test","amount_paid_usdc":"${totalCost}","source_chain":"${selectedChain}","agent_signature":"0x706179"}'`}
+                      </pre>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Terminal Footer Status Bar */}
@@ -525,6 +724,62 @@ export default function DemoPage() {
                 <span>Moove Rails (Non-Custodial) • Zero Human Clicks</span>
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* Real-time Merchant Settlement Ledger Section */}
+        <div className="w-full bg-white border border-[#E0DEDB] rounded-2xl p-6 sm:p-8 shadow-xs flex flex-col gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#F0EEEB] pb-4">
+            <div className="flex items-center gap-2.5">
+              <div className="w-2.5 h-2.5 rounded-full bg-emerald-500"></div>
+              <h2 className="text-base sm:text-lg font-bold font-sans text-[#37322F]">
+                Merchant Settlement Ledger (@cogentapay USDC Vault)
+              </h2>
+            </div>
+            <span className="text-xs text-[#847E79] font-mono">
+              Live Inbound Stream • Moove Cross-Chain Rails
+            </span>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs font-sans">
+              <thead>
+                <tr className="border-b border-[#F0EEEB] text-[#847E79] font-mono text-[11px]">
+                  <th className="py-2.5 px-3 font-semibold">Time</th>
+                  <th className="py-2.5 px-3 font-semibold">Order ID</th>
+                  <th className="py-2.5 px-3 font-semibold">Buyer Agent</th>
+                  <th className="py-2.5 px-3 font-semibold">Item Purchased</th>
+                  <th className="py-2.5 px-3 font-semibold">Inbound Chain</th>
+                  <th className="py-2.5 px-3 font-semibold">Net Settled</th>
+                  <th className="py-2.5 px-3 font-semibold">Moove Tx Proof</th>
+                  <th className="py-2.5 px-3 font-semibold">Status</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#F6F4F1] font-mono text-[11px]">
+                {ledger.map((item, i) => (
+                  <tr key={i} className="hover:bg-[#FAF9F7] transition-colors">
+                    <td className="py-3 px-3 text-[#847E79]">{item.timestamp}</td>
+                    <td className="py-3 px-3 font-bold text-[#37322F]">{item.orderId}</td>
+                    <td className="py-3 px-3 text-[#605A57]">{item.buyerAgent}</td>
+                    <td className="py-3 px-3 font-sans text-[#37322F] font-medium max-w-[200px] truncate">
+                      {item.itemTitle}
+                    </td>
+                    <td className="py-3 px-3">
+                      <span className="uppercase px-2 py-0.5 rounded bg-[#F2F0ED] text-[#37322F] text-[10px] font-semibold">
+                        {item.sourceChain}
+                      </span>
+                    </td>
+                    <td className="py-3 px-3 font-bold text-emerald-700">${item.amountUsdc} USDC</td>
+                    <td className="py-3 px-3 text-cyan-800 underline cursor-pointer">{item.mooveProof}</td>
+                    <td className="py-3 px-3">
+                      <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">
+                        {item.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       </main>
